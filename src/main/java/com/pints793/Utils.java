@@ -32,9 +32,9 @@ public final class Utils {
         return Keys.hmacShaKeyFor(System.getenv(JWT_SECRET).getBytes());
     }
 
-    public static String generateToken(String username) {
+    public static String generateToken(String userId) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME_MS))
                 .signWith(getSecretKey())

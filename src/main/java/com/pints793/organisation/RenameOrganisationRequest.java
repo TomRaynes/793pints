@@ -1,4 +1,4 @@
-package com.pints793.rest.controller;
+package com.pints793.organisation;
 
 public class RenameOrganisationRequest {
 

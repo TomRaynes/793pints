@@ -1,5 +1,6 @@
 package com.pints793.rest.controller;
 
+import com.pints793.ApplicationSupport;
 import com.pints793.IdType;
 import com.pints793.Utils;
 import com.pints793.user.LoginRequest;
@@ -17,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
-public class UserController extends ControllerSupport
+public class UserController extends ApplicationSupport
 {
     private static final String USERNAME_REGEX = "^[A-Za-z0-9_\\- ]{3,32}$";
     private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
@@ -88,7 +89,7 @@ public class UserController extends ControllerSupport
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        String token = "Bearer " + Utils.generateToken(user.getUsername());
+        String token = "Bearer " + Utils.generateToken(user.getId());
         LoginResponse response = new LoginResponse().setToken(token);
 
         return ResponseEntity.ok(response);

@@ -1,5 +1,7 @@
 package com.pints793.cellar;
 
+import com.pints793.IdType;
+import com.pints793.Utils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,6 +19,13 @@ public class Cellar {
 
     public Cellar() {
         casks = new ArrayList<>();
+    }
+
+    public Cellar(String name, String organisationId) {
+        this.id = Utils.newId(IdType.CELLAR);
+        this.organisationId = organisationId;
+        this.name = name;
+        this.casks = new ArrayList<>();
     }
 
     public String getName() {

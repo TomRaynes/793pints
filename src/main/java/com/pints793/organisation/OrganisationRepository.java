@@ -1,7 +1,5 @@
-package com.pints793.rest.controller;
+package com.pints793.organisation;
 
-import com.pints793.organisation.Organisation;
-import com.pints793.user.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

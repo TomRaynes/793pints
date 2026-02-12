@@ -1,6 +1,9 @@
 package com.pints793.rest.controller;
 
+import com.pints793.ApplicationSupport;
+import com.pints793.organisation.NewOrganisationRequest;
 import com.pints793.organisation.Organisation;
+import com.pints793.organisation.RenameOrganisationRequest;
 import com.pints793.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +17,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/organisation")
-public class OrganisationController extends ControllerSupport {
+public class OrganisationController extends ApplicationSupport {
 
     @PostMapping("/new")
     public ResponseEntity<?> newOrganisation(@RequestHeader("Authorization") String token,
@@ -29,6 +32,7 @@ public class OrganisationController extends ControllerSupport {
         user.addOrganisation(organisation.getId());
 
         organisationCollection.save(organisation);
+        userCollection.save(user);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

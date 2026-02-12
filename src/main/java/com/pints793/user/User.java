@@ -3,7 +3,7 @@ package com.pints793.user;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 @Document(collection = "User")
@@ -15,6 +15,10 @@ public class User {
     private String email;
     private String password;
     private Set<String> organisationIds;
+
+    public User() {
+        organisationIds = new HashSet<>();
+    }
 
     public String getId() {
         return id;
@@ -77,5 +81,7 @@ public class User {
         return this;
     }
 
-
+    public boolean isInOrganisation(String organisationId) {
+        return organisationIds.contains(organisationId);
+    }
 }
