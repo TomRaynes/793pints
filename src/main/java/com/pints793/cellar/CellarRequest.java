@@ -1,4 +1,4 @@
-package com.pints793.rest.request;
+package com.pints793.cellar;
 
 public class CellarRequest {
 

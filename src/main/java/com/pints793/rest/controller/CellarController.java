@@ -1,43 +1,62 @@
 package com.pints793.rest.controller;
 
-import com.pints793.dto.cellar.Cask;
-import com.pints793.dto.cellar.CaskState;
-import com.pints793.dto.cellar.Cellar;
-import com.pints793.rest.request.CellarRequest;
+import com.pints793.cellar.Cellar;
+import com.pints793.cellar.CellarRequest;
+import com.pints793.organisation.Organisation;
+import com.pints793.user.User;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/cellar")
-public class CellarController {
+public class CellarController extends ControllerSupport {
 
     @PostMapping("/get")
-    public ResponseEntity<Cellar> getCellarData(@RequestBody CellarRequest request) {
+    public ResponseEntity<?> getCellarData(@RequestHeader("Authorization") String token,
+                                           @RequestBody CellarRequest request) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
         String cellarName = request.getCellarName();
 
-        Cask cask1 = new Cask();
-        cask1.setName("cask1")
-                .setImageUrl("logos/cask1.png")
-                .setState(CaskState.RACKED)
-                .setReceivedDate(OffsetDateTime.now())
-                .setExpiryDate(OffsetDateTime.now().plusDays(30));
+        List<Cellar> matches = cellarCollection.findByName(cellarName);
 
-        Cask cask2 = new Cask();
-        cask2.setName("cask2")
-                .setImageUrl("logos/cask2.png")
-                .setState(CaskState.PULLING)
-                .setReceivedDate(OffsetDateTime.now())
-                .setExpiryDate(OffsetDateTime.now().plusDays(30));
+        Cellar cellar = matches.getFirst();
 
-        Cellar cellar = new Cellar();
-        cellar.setName(cellarName)
-                .addCask(cask1)
-                .addCask(cask2);
+
+
+        return ResponseEntity.ok(cellar);
+    }
+
+    @PostMapping("/new")
+    public ResponseEntity<?> newCellar(@RequestHeader("Authorization") String token,
+                                       @RequestBody CellarRequest request) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Set<Organisation> organisations = getOrganisations(user);
+
+        String cellarName = request.getCellarName();
+
+        List<Cellar> matches = cellarCollection.findByName(cellarName);
+
+        Cellar cellar = matches.getFirst();
+
+
 
         return ResponseEntity.ok(cellar);
     }

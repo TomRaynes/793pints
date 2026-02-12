@@ -1,0 +1,68 @@
+package com.pints793.rest.controller;
+
+import com.pints793.organisation.Organisation;
+import com.pints793.user.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/v1/organisation")
+public class OrganisationController extends ControllerSupport {
+
+    @PostMapping("/new")
+    public ResponseEntity<?> newOrganisation(@RequestHeader("Authorization") String token,
+                                             @RequestBody NewOrganisationRequest request) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        Organisation organisation = new Organisation(request.getName(), user.getId());
+        user.addOrganisation(organisation.getId());
+
+        organisationCollection.save(organisation);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/rename")
+    public ResponseEntity<?> renameOrganisation(@RequestHeader("Authorization") String token,
+                                                @RequestBody RenameOrganisationRequest request) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+
+        List<Organisation> matches = organisationCollection.findByOwnerUserId(user.getId());
+
+        if (matches.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        String oldName = request.getOldName();
+        String newName = request.getNewName();
+        Organisation organisation = null;
+
+        for (Organisation org : matches) {
+            if (org.getName().equals(oldName)) {
+                organisation = org;
+            }
+        }
+        if (organisation == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        organisation.setName(newName);
+        organisationCollection.save(organisation);
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+}

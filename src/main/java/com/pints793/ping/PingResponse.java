@@ -1,4 +1,4 @@
-package com.pints793.dto.ping;
+package com.pints793.ping;
 
 public class PingResponse {
 

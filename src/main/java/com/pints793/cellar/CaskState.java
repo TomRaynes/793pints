@@ -1,4 +1,4 @@
-package com.pints793.dto.cellar;
+package com.pints793.cellar;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 

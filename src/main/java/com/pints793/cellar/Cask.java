@@ -1,13 +1,11 @@
-package com.pints793.dto.cellar;
-
-import java.time.OffsetDateTime;
+package com.pints793.cellar;
 
 public class Cask {
     private String name;
     private CaskState state;
     private String imageUrl;
-    private OffsetDateTime receivedDate;
-    private OffsetDateTime expiryDate;
+    private String receivedDate;
+    private String expiryDate;
 
     public Cask() {
     }
@@ -39,20 +37,20 @@ public class Cask {
         return this;
     }
 
-    public OffsetDateTime getReceivedDate() {
+    public String getReceivedDate() {
         return receivedDate;
     }
 
-    public Cask setReceivedDate(OffsetDateTime receivedDate) {
+    public Cask setReceivedDate(String receivedDate) {
         this.receivedDate = receivedDate;
         return this;
     }
 
-    public OffsetDateTime getExpiryDate() {
+    public String getExpiryDate() {
         return expiryDate;
     }
 
-    public Cask setExpiryDate(OffsetDateTime expiryDate) {
+    public Cask setExpiryDate(String expiryDate) {
         this.expiryDate = expiryDate;
         return this;
     }

@@ -1,6 +1,6 @@
 package com.pints793.rest.controller;
 
-import com.pints793.dto.ping.PingResponse;
+import com.pints793.ping.PingResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
