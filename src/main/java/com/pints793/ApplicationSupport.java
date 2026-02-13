@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Component
-public class ApplicationSupport {
+public abstract class ApplicationSupport {
 
     @Autowired protected CellarRepository cellarCollection;
     @Autowired protected UserRepository userCollection;

@@ -4,7 +4,7 @@ import com.pints793.cellar.Cellar;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CellarManager extends ApplicationSupport {
+public class ApplicationManager extends ApplicationSupport {
 
     public void run() {
         while (Thread.currentThread().isAlive()) {

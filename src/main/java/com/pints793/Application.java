@@ -9,8 +9,8 @@ public class Application {
 
     public static void main(String[] args) {
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
-        CellarManager cellarManager = context.getBean(CellarManager.class);
-        Thread applicationDaemon = new Thread(cellarManager::run);
+        ApplicationManager applicationManager = context.getBean(ApplicationManager.class);
+        Thread applicationDaemon = new Thread(applicationManager::run);
         applicationDaemon.setDaemon(true);
         applicationDaemon.start();
     }
