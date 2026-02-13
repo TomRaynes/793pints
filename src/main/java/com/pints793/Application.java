@@ -12,6 +12,6 @@ public class Application {
         ApplicationManager applicationManager = context.getBean(ApplicationManager.class);
         Thread applicationDaemon = new Thread(applicationManager::run);
         applicationDaemon.setDaemon(true);
-        applicationDaemon.start();
+//        applicationDaemon.start();
     }
 }

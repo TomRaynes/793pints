@@ -1,5 +1,6 @@
 package com.pints793;
 
+import com.pints793.cask.CaskRepository;
 import com.pints793.cellar.Cellar;
 import com.pints793.cellar.CellarRepository;
 import com.pints793.organisation.Organisation;
@@ -17,6 +18,7 @@ import java.util.Set;
 public abstract class ApplicationSupport {
 
     @Autowired protected CellarRepository cellarCollection;
+    @Autowired protected CaskRepository caskCollection;
     @Autowired protected UserRepository userCollection;
     @Autowired protected OrganisationRepository organisationCollection;
 
