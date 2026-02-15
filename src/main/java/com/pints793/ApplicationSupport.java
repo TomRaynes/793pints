@@ -45,11 +45,24 @@ public abstract class ApplicationSupport {
         return cellarCollection.findById(cellarId).orElse(null);
     }
 
-    protected Set<Cellar> getCellars(Organisation organisation) {
+    protected Set<EntityLabel> getCellars(Organisation organisation) {
         Set<String> cellarIds = organisation.getCellars();
-        Set<Cellar> cellars = new HashSet<>();
+        Set<EntityLabel> cellars = new HashSet<>();
         cellarIds.forEach(cellarId -> cellarCollection
-                .findById(cellarId).ifPresent(cellars::add));
+                .findById(cellarId).ifPresent(cellar ->
+                        cellars.add(new EntityLabel().setId(cellarId)
+                                                     .setName(cellar.getName())
+                        )));
         return cellars;
     }
-}
+
+    protected Set<EntityLabel> getOrganisations(User user) {
+        Set<String> organisationIds = user.getOrganisationIds();
+        Set<EntityLabel> organisations = new HashSet<>();
+        organisationIds.forEach(organisationId -> organisationCollection
+                .findById(organisationId).ifPresent(org ->
+                        organisations.add(new EntityLabel().setId(organisationId)
+                                                                 .setName(org.getName())
+                        )));
+        return organisations;
+    }}
