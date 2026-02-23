@@ -2,17 +2,29 @@ import { useState, useContext } from "react";
 import { login } from "../api/auth";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import {HttpStatusCode} from "axios";
 
 export default function LoginPage() {
     const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
+    const [incorrectAttempt, setIncorrectAttempt] = useState(false);
     const { setToken } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogin = async () => {
-        const res = await login({ identifier, password });
-        setToken(res.token);
-        navigate("/dashboard");
+        setIncorrectAttempt(false);
+
+        try {
+            const res = await login({ identifier, password });
+            setToken(res.data.token);
+            navigate("/dashboard");
+        } catch (err: any) {
+            const status = err?.response?.status;
+
+            if (status === HttpStatusCode.Unauthorized) {
+                setIncorrectAttempt(true);
+            }
+        }
     };
 
     return (
@@ -42,6 +54,12 @@ export default function LoginPage() {
                 />
                 <button onClick={handleLogin} className="inputElement">Login</button>
             </div>
+
+            {incorrectAttempt && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
+                    <span style={{ color: '#b00020' }}>Incorrect username or password.</span>
+                </div>
+            )}
         </div>
     );
 }

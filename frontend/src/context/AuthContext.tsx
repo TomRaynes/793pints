@@ -25,3 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         </AuthContext.Provider>
     );
 };
+
+export const hasNoToken = () => {
+    return localStorage.getItem("token") == null;
+}

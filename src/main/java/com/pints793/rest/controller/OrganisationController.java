@@ -7,6 +7,7 @@ import com.pints793.organisation.RenameOrganisationRequest;
 import com.pints793.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,7 @@ import java.util.List;
 public class OrganisationController extends ApplicationSupport {
 
     @PostMapping("/new")
-    public ResponseEntity<?> newOrganisation(@RequestHeader("Authorization") String token,
+    public ResponseEntity<?> newOrganisation(@RequestHeader(value = "Authorization", required = false) String token,
                                              @RequestBody NewOrganisationRequest request) {
         User user = getUser(token);
 
@@ -39,7 +40,7 @@ public class OrganisationController extends ApplicationSupport {
     }
 
     @PostMapping("/rename")
-    public ResponseEntity<?> renameOrganisation(@RequestHeader("Authorization") String token,
+    public ResponseEntity<?> renameOrganisation(@RequestHeader(value = "Authorization", required = false) String token,
                                                 @RequestBody RenameOrganisationRequest request) {
         User user = getUser(token);
 
@@ -72,7 +73,10 @@ public class OrganisationController extends ApplicationSupport {
     }
 
     @GetMapping("get/all")
-    public ResponseEntity<?> getAllOrganisations(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<?> getAllOrganisations(@RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
         User user = getUser(token);
 
         if (user == null) {

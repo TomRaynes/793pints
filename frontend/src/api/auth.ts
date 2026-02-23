@@ -2,8 +2,7 @@ import api from "./client";
 import type {LoginRequest, NewUserRequest} from "../types/models";
 
 export const login = async (data: LoginRequest) => {
-    const res = await api.post("/user/login", data);
-    return res.data;
+    return await api.post("/user/login", data);
 };
 
 export const register = async (data: NewUserRequest) => {

@@ -2,16 +2,24 @@ import {useEffect, useState} from "react";
 import type {EntityLabel} from "../types/models.ts";
 import {getAllOrganisations} from "../api/organisation.ts";
 import { useNavigate } from "react-router-dom";
+import {useHandleUnauthorised} from "../Utils.tsx";
 
 export default function ChooseOrganisationPage() {
     const [organisations, setOrganisations] = useState<EntityLabel[]>([]);
     const navigate = useNavigate();
+    const handleUnauthorised = useHandleUnauthorised();
 
     const load = async () => {
-        const data = await getAllOrganisations();
-        const rawList = Array.isArray(data) ? data : data?.organisations ?? [];
-        // setOrganisations(rawList);
-        setOrganisations([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+        try {
+            const res = await getAllOrganisations();
+            const data = res.data
+            const rawList = Array.isArray(data) ? data : data?.organisations ?? [];
+            // setOrganisations(rawList);
+            setOrganisations([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+        } catch (err: any) {
+            handleUnauthorised(err);
+        }
+
     };
 
     useEffect(() => {

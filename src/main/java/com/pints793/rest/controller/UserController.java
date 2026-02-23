@@ -9,9 +9,12 @@ import com.pints793.user.NewUserRequest;
 import com.pints793.user.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -77,21 +80,27 @@ public class UserController extends ApplicationSupport
         }
 
         if (matchedUsers == null || matchedUsers.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // no user matched
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build(); // no user matched
         }
         if (matchedUsers.size() > 1) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build(); // FATAL: multiple users matched
+            // FATAL: multiple users matched
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
 
         User user = matchedUsers.getFirst();
 
         if (!Utils.passwordMatches(password, user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         String token = "Bearer " + Utils.generateToken(user.getId());
         LoginResponse response = new LoginResponse().setToken(token);
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("verify_token")
+    public ResponseEntity<?> verifyToken(@RequestHeader("Authorization") String token) {
+
     }
 }

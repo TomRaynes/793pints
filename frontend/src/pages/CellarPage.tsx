@@ -3,6 +3,7 @@ import { getAllCasks } from "../api/cask";
 import type {Cask, EntityLabel} from "../types/models";
 import StatusGroup from "../components/StatusGroup";
 import {useLocation} from "react-router-dom";
+import {useHandleUnauthorised} from "../Utils.tsx";
 
 const statuses = [
     "Delivered",
@@ -52,14 +53,20 @@ export default function CellarPage() {
     const location = useLocation();
     const state = location.state as CellarLocationState;
 
-    const organisationId = state.organisationId;
-    const cellarId = state.cellar.id;
-    const cellarName = state.cellar.name;
+    const organisationId = state?.organisationId ?? null;
+    const cellarId = state?.cellar.id ?? null;
+    const cellarName = state?.cellar.name ?? null;
+
+    const handleUnauthorised = useHandleUnauthorised();
 
     const load = async () => {
-        const data = await getAllCasks(organisationId, cellarId);
-        const rawList = Array.isArray(data) ? data : data?.casks ?? [];
-        setCasks(rawList.map((c: Record<string, unknown>) => normalizeCask(c)));
+        try {
+            const data = await getAllCasks(organisationId, cellarId);
+            const rawList = Array.isArray(data) ? data : data?.casks ?? [];
+            setCasks(rawList.map((c: Record<string, unknown>) => normalizeCask(c)));
+        } catch (err: any) {
+            handleUnauthorised(err);
+        }
     };
 
     useEffect(() => {

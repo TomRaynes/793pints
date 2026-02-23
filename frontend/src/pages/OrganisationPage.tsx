@@ -2,21 +2,27 @@ import {useLocation, useNavigate} from "react-router-dom";
 import type {EntityLabel} from "../types/models.ts";
 import {useEffect, useState} from "react";
 import {getAllCellars} from "../api/cellar.ts";
+import {useHandleUnauthorised} from "../Utils.tsx";
 
 export default function OrganisationPage() {
     const location = useLocation();
     const state = location.state as EntityLabel;
     const organisationName = state?.name;
     const organisationId = state?.id;
+    const handleUnauthorised = useHandleUnauthorised();
 
     const [cellars, setCellars] = useState<EntityLabel[]>([]);
     const navigate = useNavigate();
 
     const load = async () => {
-        const data = await getAllCellars(organisationId);
-        console.log(data);
-        const rawList = Array.isArray(data) ? data : data?.cellars ?? [];
-        setCellars([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+        try {
+            const data = await getAllCellars(organisationId);
+            console.log(data);
+            const rawList = Array.isArray(data) ? data : data?.cellars ?? [];
+            setCellars([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+        } catch (err: any) {
+            handleUnauthorised(err);
+        }
     };
 
     useEffect(() => {

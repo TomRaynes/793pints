@@ -1,8 +1,8 @@
 import api from "./client";
 
 export const getAllCasks = async (
-    organisationId: string,
-    cellarId: string
+    organisationId: string | null,
+    cellarId: string | null
 ) => {
     const res = await api.post("/cask/get/all", {
         organisationId,
