@@ -101,6 +101,8 @@ public class UserController extends ApplicationSupport
 
     @GetMapping("verify_token")
     public ResponseEntity<?> verifyToken(@RequestHeader("Authorization") String token) {
-
+        return getUser(token) == null
+                ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
+                : ResponseEntity.ok().build();
     }
 }

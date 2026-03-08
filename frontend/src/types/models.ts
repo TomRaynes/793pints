@@ -30,6 +30,11 @@ export interface Cask {
     caskId: string;
     caskName: string;
     state: CaskState;
+    stateChangeTimestamp: Date;
+    rackCooldownHours: number | null;
+    ventCooldownHours: number | null;
+    tapCooldownHours: number | null;
+    pullingCooldownHours: number | null;
 }
 
 export interface EntityLabel {

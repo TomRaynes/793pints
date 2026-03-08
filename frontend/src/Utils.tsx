@@ -2,17 +2,15 @@ import { HttpStatusCode } from "axios";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "./api/client.ts";
+import type {CaskState} from "./types/models.ts";
 
 export function useHandleUnauthorised() {
     const navigate = useNavigate();
 
     return useCallback((err: any) => {
         const status = err?.response?.status;
-        console.log(err);
-
 
         if (status === HttpStatusCode.Unauthorized || status === HttpStatusCode.BadRequest) {
-            console.log("unauthorised");
             navigate("/");
         }
     }, [navigate]);
@@ -25,4 +23,18 @@ export const isLoggedIn = async() => {
     } catch (err: any) {
         return false;
     }
+}
+
+export const getNextState = (state: CaskState) : CaskState | null => {
+    switch (state) {
+        case "Delivered": return "Racked";
+        case "Racked": return "Settled";
+        case "Settled": return "Vented";
+        case "Vented": return "Needs Tap";
+        case "Needs Tap": return "Tapped";
+        case "Tapped": return "Ready to Serve";
+        case "Ready to Serve": return "Pulling";
+        case "Pulling": return "Tired";
+    }
+    return null;
 }

@@ -40,8 +40,23 @@ const normalizeCask = (raw: Record<string, unknown>): Cask => {
         caskId: String(raw.caskId ?? raw.id ?? ""),
         caskName: String(raw.caskName ?? raw.name ?? ""),
         state: normalizeState(String(raw.state ?? "")) as Cask["state"],
+        stateChangeTimestamp: new Date(String(raw.stateChangeTimestamp ?? null)),
+        rackCooldownHours: Number(raw.rackCooldownHours) ?? null,
+        ventCooldownHours: Number(raw.ventCooldownHours) ?? null,
+        tapCooldownHours: Number(raw.tapCooldownHours) ?? null,
+        pullingCooldownHours: Number(raw.pullingCooldownHours) ?? null
     };
 };
+
+const getCooldown = (cask: Cask): number | null => {
+    switch (cask.state) {
+        case "Racked": return Number(cask.rackCooldownHours) ?? null;
+        case "Vented": return Number(cask.ventCooldownHours) ?? null;
+        case "Tapped": return Number(cask.tapCooldownHours) ?? null;
+        case "Pulling": return Number(cask.pullingCooldownHours) ?? null;
+    }
+    return null;
+}
 
 type CellarLocationState = {
     organisationId: string;
