@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { getAllCasks } from "../api/cask";
-import type {Cask, EntityLabel} from "../types/models";
+import { getAllCasks, createCask } from "../api/cask";
+import type {Cask, CaskState, EntityLabel} from "../types/models";
 import StatusGroup from "../components/StatusGroup";
 import {useLocation} from "react-router-dom";
 import {useHandleUnauthorised} from "../Utils.tsx";
@@ -44,18 +44,40 @@ const normalizeCask = (raw: Record<string, unknown>): Cask => {
         rackCooldownHours: Number(raw.rackCooldownHours) ?? null,
         ventCooldownHours: Number(raw.ventCooldownHours) ?? null,
         tapCooldownHours: Number(raw.tapCooldownHours) ?? null,
-        pullingCooldownHours: Number(raw.pullingCooldownHours) ?? null
+        pullingPeriodHours: Number(raw.pullingPeriodHours) ?? null
     };
 };
 
-const getCooldown = (cask: Cask): number | null => {
+export const getCooldown = (cask: Cask): number | null => {
     switch (cask.state) {
-        case "Racked": return Number(cask.rackCooldownHours) ?? null;
-        case "Vented": return Number(cask.ventCooldownHours) ?? null;
-        case "Tapped": return Number(cask.tapCooldownHours) ?? null;
-        case "Pulling": return Number(cask.pullingCooldownHours) ?? null;
+        case "Racked": return cask.rackCooldownHours == null ? null : Number(cask.rackCooldownHours);
+        case "Vented": return cask.ventCooldownHours == null ? null : Number(cask.ventCooldownHours);
+        case "Tapped": return cask.tapCooldownHours == null ? null : Number(cask.tapCooldownHours);
+        case "Pulling": return cask.pullingPeriodHours == null ? null : Number(cask.pullingPeriodHours);
     }
     return null;
+}
+
+const getNextState = (cask: Cask): CaskState => {
+    switch (cask.state) {
+        case "Delivered": return "Racked";
+        case "Racked": return "Settled";
+        case "Settled": return "Vented";
+        case "Vented": return "Needs Tap";
+        case "Needs Tap": return "Tapped";
+        case "Tapped": return "Ready to Serve";
+        case "Ready to Serve": return "Pulling";
+        case "Pulling": return "Tired";
+        case "Tired": return "Tired";
+    }
+}
+
+export function refreshCaskState(cask: Cask): Cask {
+    return {
+        ...cask,
+        state: getNextState(cask),
+        stateChangeTimestamp: new Date()
+    };
 }
 
 type CellarLocationState = {
@@ -65,6 +87,9 @@ type CellarLocationState = {
 
 export default function CellarPage() {
     const [casks, setCasks] = useState<Cask[]>([]);
+    const [isNewCaskOpen, setIsNewCaskOpen] = useState(false);
+    const [newCaskName, setNewCaskName] = useState("");
+    const [isCreating, setIsCreating] = useState(false);
     const location = useLocation();
     const state = location.state as CellarLocationState;
 
@@ -88,8 +113,45 @@ export default function CellarPage() {
         load();
     }, []);
 
-    const newCask = () => {
+    useEffect(() => {
+        const id = setInterval(() => {
+            setCasks((prev) => prev.map((cask) => {
+                const cooldownHours = getCooldown(cask);
+                if (cooldownHours == null) return cask;
+                const lastChangeMs = cask.stateChangeTimestamp.getTime();
+                if (!Number.isFinite(lastChangeMs)) return cask;
+                const remainingMs = (cooldownHours * 60 * 60 * 1000) - (Date.now() - lastChangeMs);
+                if (remainingMs > 0) return cask;
+                return refreshCaskState(cask);
+            }));
+        }, 1000);
+        return () => clearInterval(id);
+    }, []);
 
+    const newCask = () => {
+        setNewCaskName("");
+        setIsNewCaskOpen(true);
+    };
+
+    const closeNewCask = () => {
+        if (isCreating) return;
+        setIsNewCaskOpen(false);
+    };
+
+    const submitNewCask = async () => {
+        if (!organisationId || !cellarId || isCreating) return;
+        const trimmedName = newCaskName.trim();
+        if (!trimmedName) return;
+        try {
+            setIsCreating(true);
+            await createCask(organisationId, cellarId, trimmedName, "Delivered");
+            await load();
+            setIsNewCaskOpen(false);
+        } catch (err: any) {
+            handleUnauthorised(err);
+        } finally {
+            setIsCreating(false);
+        }
     };
 
     return (
@@ -118,6 +180,29 @@ export default function CellarPage() {
                     New Cask
                 </button>
             </div>
+
+            {isNewCaskOpen ? (
+                <div className="modal-overlay" onClick={closeNewCask}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Cask Name</h3>
+                        <input
+                            type="text"
+                            value={newCaskName}
+                            onChange={(e) => setNewCaskName(e.target.value)}
+                            placeholder="Enter cask name"
+                            autoFocus
+                        />
+                        <div className="modal-actions">
+                            <button type="button" onClick={closeNewCask} disabled={isCreating}>
+                                Cancel
+                            </button>
+                            <button type="button" onClick={submitNewCask} disabled={isCreating || !newCaskName.trim()}>
+                                {isCreating ? "Creating..." : "Create"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ) : null}
         </div>
     );
 }

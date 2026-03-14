@@ -34,7 +34,7 @@ export interface Cask {
     rackCooldownHours: number | null;
     ventCooldownHours: number | null;
     tapCooldownHours: number | null;
-    pullingCooldownHours: number | null;
+    pullingPeriodHours: number | null;
 }
 
 export interface EntityLabel {
