@@ -84,10 +84,29 @@
     border: 1px solid #ddd;
 }
 
-.cask-card {
+.cask-card-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
     padding: 6px;
     margin: 4px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
     background: #f7f7f7;
+    cursor: pointer;
+    text-align: left;
+}
+
+.cask-card-button:hover {
+    background: #f1f1f1;
+}
+
+.cask-card {
+    padding: 0;
+    margin: 0;
+    background: transparent;
 }
 
 .modal-overlay {
@@ -115,6 +134,21 @@
     margin: 8px 0 12px;
     border: 1px solid #ccc;
     border-radius: 6px;
+}
+
+.modal select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 8px 0 12px;
 }
 
 .modal-actions {

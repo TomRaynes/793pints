@@ -29,7 +29,7 @@ const stateLabelMap: Record<string, string> = {
     tired: "Tired",
 };
 
-const normalizeState = (state: string | undefined) => {
+export const normalizeState = (state: string | undefined) => {
     if (!state) return "";
     const key = state.trim().toLowerCase();
     return stateLabelMap[key] ?? state;
@@ -154,6 +154,10 @@ export default function CellarPage() {
         }
     };
 
+    const updateCask = (updated: Cask) => {
+        setCasks((prev) => prev.map((cask) => (cask.caskId === updated.caskId ? updated : cask)));
+    };
+
     return (
         <div className="container">
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -168,6 +172,10 @@ export default function CellarPage() {
                         key={status}
                         status={status}
                         casks={casks.filter((c) => c.state === status)}
+                        organisationId={organisationId}
+                        cellarId={cellarId}
+                        onUpdateCask={updateCask}
+                        onError={handleUnauthorised}
                     />
                 ))
             )}
