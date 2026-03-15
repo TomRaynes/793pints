@@ -7,10 +7,11 @@ interface Props {
     organisationId: string | null;
     cellarId: string | null;
     onUpdateCask: (updated: Cask) => void;
+    onRemoveCask: (caskId: string) => void;
     onError: (err: unknown) => void;
 }
 
-export default function StatusGroup({ status, casks, organisationId, cellarId, onUpdateCask, onError }: Props) {
+export default function StatusGroup({ status, casks, organisationId, cellarId, onUpdateCask, onRemoveCask, onError }: Props) {
     if (casks.length === 0) return null;
 
     return (
@@ -23,6 +24,7 @@ export default function StatusGroup({ status, casks, organisationId, cellarId, o
                     organisationId={organisationId}
                     cellarId={cellarId}
                     onUpdate={onUpdateCask}
+                    onRemove={onRemoveCask}
                     onError={onError}
                 />
             ))}

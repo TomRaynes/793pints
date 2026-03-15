@@ -60,6 +60,11 @@ public class Cellar {
         return this;
     }
 
+    public Cellar removeCask(String caskId) {
+        casks.remove(caskId);
+        return this;
+    }
+
     public String getOrganisationId() {
         return organisationId;
     }

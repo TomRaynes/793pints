@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type {Cask, CaskState} from "../types/models";
-import { updateCask as updateCaskApi } from "../api/cask";
+import { updateCask as updateCaskApi, removeCask as removeCaskApi } from "../api/cask";
 import {normalizeState} from "../pages/CellarPage.tsx";
 
 const caskStates: CaskState[] = [
@@ -28,6 +28,7 @@ type Props = {
     organisationId: string | null;
     cellarId: string | null;
     onUpdate: (updated: Cask) => void;
+    onRemove: (caskId: string) => void;
     onError: (err: unknown) => void;
 };
 
@@ -73,10 +74,12 @@ const getCooldown = (cask: Cask): number | null => {
     return null;
 };
 
-export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onError }: Props) {
+export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onRemove, onError }: Props) {
     const [nowMs, setNowMs] = useState(() => Date.now());
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [editName, setEditName] = useState(cask.caskName ?? "");
     const [editState, setEditState] = useState<CaskState>(cask.state);
     const [editRack, setEditRack] = useState("");
@@ -96,6 +99,11 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onE
 
     const openEdit = () => setIsEditOpen(true);
     const closeEdit = () => setIsEditOpen(false);
+    const openDelete = () => setIsDeleteOpen(true);
+    const closeDelete = () => {
+        if (isDeleting) return;
+        setIsDeleteOpen(false);
+    };
 
     const toNullableNumber = (value: string): number | null => {
         const trimmed = value.trim();
@@ -139,6 +147,20 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onE
         }
     };
 
+    const confirmDelete = async () => {
+        if (!organisationId || !cellarId || isDeleting) return;
+        try {
+            setIsDeleting(true);
+            await removeCaskApi(organisationId, cellarId, cask.caskId);
+            onRemove(cask.caskId);
+            setIsDeleteOpen(false);
+        } catch (err) {
+            onError(err);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     const cooldownHours = getCooldown(cask);
     const lastChangeMs = cask.stateChangeTimestamp instanceof Date
         ? cask.stateChangeTimestamp.getTime()
@@ -160,15 +182,37 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onE
 
     return (
         <>
-            <button type="button" className="cask-card-button" onClick={openEdit}>
-                <div className="cask-card">
-                    <strong>{cask.caskName}</strong>
-                    <div>Status: {cask.state}</div>
+            <div className="cask-card-row">
+                <button type="button" className="cask-card-button" onClick={openEdit}>
+                    <div className="cask-card">
+                        <strong>{cask.caskName}</strong>
+                        <div>Status: {cask.state}</div>
+                    </div>
+                    <div>
+                        {remainingText ? `${remainingText} remaining` : null}
+                    </div>
+                </button>
+                <button type="button" className="cask-delete-button" onClick={openDelete}>
+                    Delete
+                </button>
+            </div>
+
+            {isDeleteOpen ? (
+                <div className="modal-overlay" onClick={closeDelete}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Delete Cask</h3>
+                        <p>Are you sure you want to delete "{cask.caskName}"?</p>
+                        <div className="modal-actions">
+                            <button type="button" onClick={closeDelete} disabled={isDeleting}>
+                                Cancel
+                            </button>
+                            <button type="button" onClick={confirmDelete} disabled={isDeleting}>
+                                {isDeleting ? "Deleting..." : "Delete"}
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    {remainingText ? `${remainingText} remaining` : null}
-                </div>
-            </button>
+            ) : null}
 
             {isEditOpen ? (
                 <div className="modal-overlay" onClick={closeEdit}>

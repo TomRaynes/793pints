@@ -6,6 +6,7 @@ import com.pints793.cask.Cask;
 import com.pints793.cask.CaskState;
 import com.pints793.cask.GetAllCasksRequest;
 import com.pints793.cask.GetCaskRequest;
+import com.pints793.cask.RemoveCaskRequest;
 import com.pints793.cask.UpdateCaskRequest;
 import com.pints793.cellar.Cellar;
 import com.pints793.cask.NewCaskRequest;
@@ -64,6 +65,25 @@ public class CaskController extends ApplicationSupport {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
             return ResponseEntity.ok().body(cask);
+        } catch (ErrorResponseException e) {
+            return new ResponseEntity<>(e.getStatus());
+        }
+    }
+
+    @PostMapping("/remove")
+    public ResponseEntity<?> removeCask(@RequestHeader("Authorization") String token,
+                                        @RequestBody RemoveCaskRequest request) {
+        try {
+            Cellar cellar = authenticateAndGetCellar(token, request);
+            String caskId = request.getCaskId();
+
+            if (!cellar.getCasks().contains(caskId)) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            cellar.removeCask(caskId);
+            caskCollection.removeById(caskId);
+            cellarCollection.save(cellar);
+            return ResponseEntity.status(HttpStatus.OK).build();
         } catch (ErrorResponseException e) {
             return new ResponseEntity<>(e.getStatus());
         }

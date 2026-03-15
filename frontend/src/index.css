@@ -84,8 +84,15 @@
     border: 1px solid #ddd;
 }
 
+.cask-card-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .cask-card-button {
-    width: 100%;
+    flex: 1;
+    width: auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -101,6 +108,19 @@
 
 .cask-card-button:hover {
     background: #f1f1f1;
+}
+
+.cask-delete-button {
+    padding: 6px 10px;
+    border: 1px solid #d33;
+    background: #fff5f5;
+    color: #b00020;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.cask-delete-button:hover {
+    background: #ffecec;
 }
 
 .cask-card {

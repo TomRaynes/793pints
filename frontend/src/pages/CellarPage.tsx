@@ -158,6 +158,10 @@ export default function CellarPage() {
         setCasks((prev) => prev.map((cask) => (cask.caskId === updated.caskId ? updated : cask)));
     };
 
+    const removeCaskFromList = (caskId: string) => {
+        setCasks((prev) => prev.filter((cask) => cask.caskId !== caskId));
+    };
+
     return (
         <div className="container">
             <div style={{ display: 'flex', justifyContent: 'center' }}>
@@ -175,6 +179,7 @@ export default function CellarPage() {
                         organisationId={organisationId}
                         cellarId={cellarId}
                         onUpdateCask={updateCask}
+                        onRemoveCask={removeCaskFromList}
                         onError={handleUnauthorised}
                     />
                 ))

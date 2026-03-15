@@ -26,6 +26,19 @@ export const createCask = async (
     return res.data;
 };
 
+export const removeCask = async (
+    organisationId: string | null,
+    cellarId: string | null,
+    caskId: string
+) => {
+    const res = await api.post("/cask/remove", {
+        organisationId,
+        cellarId,
+        caskId,
+    });
+    return res.data;
+};
+
 export const updateCask = async (
     organisationId: string,
     cellarId: string,
