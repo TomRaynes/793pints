@@ -2,6 +2,9 @@ package com.pints793.cask;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.Arrays;
+import java.util.List;
+
 public enum CaskState {
     DELIVERED("delivered"),
     RACKED("racked"),
@@ -24,10 +27,19 @@ public enum CaskState {
         return value;
     }
 
+
     public static CaskState parse(String state) {
         if (state == null) {
             return null;
         }
         return CaskState.valueOf(state.toUpperCase());
+    }
+
+    public boolean hasCooldown() {
+        return equals(RACKED) || equals(VENTED) || equals(TAPPED) || equals(PULLING);
+    }
+
+    public CaskState getNextState() {
+        return ordinal() < TIRED.ordinal() ? values()[ordinal() + 1] : this;
     }
 }

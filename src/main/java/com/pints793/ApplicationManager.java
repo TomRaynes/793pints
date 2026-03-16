@@ -1,19 +1,19 @@
 package com.pints793;
 
+import com.pints793.cask.Cask;
 import com.pints793.cellar.Cellar;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
+
+import java.time.OffsetDateTime;
 
 @Component
 public class ApplicationManager extends ApplicationSupport {
 
     public void run() {
         while (Thread.currentThread().isAlive()) {
-            Cellar cellar = cellarCollection.findById("CELLAR-0000019c-53fb-a958-9445-53da2d67bccc").orElse(null);
-            System.out.println(cellar.getName());
-
-
-
-
+            updateCaskStates();
 
             try {
                 Thread.sleep(1000);
@@ -21,5 +21,31 @@ public class ApplicationManager extends ApplicationSupport {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    private void updateCaskStates() {
+        int page = 0;
+        Page<Cask> result;
+        OffsetDateTime currentTime = OffsetDateTime.now();
+
+        do {
+            result = caskCollection.findAll(PageRequest.of(page++, 500));
+
+            for (Cask cask : result.getContent()) {
+                Long cooldown = cask.getActiveCooldown();
+
+                if (!cask.getState().hasCooldown() || cooldown == null) {
+                    continue;
+                }
+                OffsetDateTime stateChangeTime = OffsetDateTime.parse(cask.getStateChangeTimestamp());
+
+                if (currentTime.isAfter(stateChangeTime.plusHours(cooldown))) {
+                    cask.progressState();
+                    caskCollection.save(cask);
+                }
+            }
+        } while (result.hasNext());
+
+        System.out.println(currentTime);
     }
 }

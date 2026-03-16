@@ -152,4 +152,20 @@ public class Cask implements DefaultConfig {
         this.pullingPeriodHours = pullingPeriodHours;
         return this;
     }
+
+    public Long getActiveCooldown() {
+        return switch (state) {
+            case RACKED -> rackCooldownHours;
+            case VENTED -> ventCooldownHours;
+            case TAPPED -> tapCooldownHours;
+            case PULLING -> pullingPeriodHours;
+            default -> null;
+        };
+    }
+
+    public Cask progressState() {
+        state = state.getNextState();
+        stateChangeTimestamp = OffsetDateTime.now().toString();
+        return this;
+    }
 }

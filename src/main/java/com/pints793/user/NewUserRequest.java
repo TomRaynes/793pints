@@ -1,5 +1,6 @@
 package com.pints793.user;
 
+
 public class NewUserRequest {
     private String username;
     private String email;
