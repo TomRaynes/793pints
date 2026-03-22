@@ -32,7 +32,7 @@ public final class Utils {
     }
 
     public static String generateToken(String userId) {
-        return Jwts.builder()
+        return "Bearer " + Jwts.builder()
                 .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_TIME_MS))

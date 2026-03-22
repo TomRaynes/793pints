@@ -3,6 +3,7 @@ import type {EntityLabel} from "../types/models.ts";
 import {useEffect, useState} from "react";
 import {getAllCellars} from "../api/cellar.ts";
 import {useHandleUnauthorised} from "../Utils.tsx";
+import {getUserAccessLevel, inviteToOrganisation} from "../api/organisation.ts";
 
 export default function OrganisationPage() {
     const location = useLocation();
@@ -12,6 +13,10 @@ export default function OrganisationPage() {
     const handleUnauthorised = useHandleUnauthorised();
 
     const [cellars, setCellars] = useState<EntityLabel[]>([]);
+    const [accessLevel, setAccessLevel] = useState<string | null>(null);
+    const [isInviteOpen, setIsInviteOpen] = useState(false);
+    const [inviteIdentifier, setInviteIdentifier] = useState("");
+    const [isInviting, setIsInviting] = useState(false);
     const navigate = useNavigate();
 
     const load = async () => {
@@ -20,6 +25,9 @@ export default function OrganisationPage() {
             console.log(data);
             const rawList = Array.isArray(data) ? data : data?.cellars ?? [];
             setCellars([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+
+            const accessData = await getUserAccessLevel(organisationId);
+            setAccessLevel(accessData.accessLevel);
         } catch (err: any) {
             handleUnauthorised(err);
         }
@@ -35,6 +43,33 @@ export default function OrganisationPage() {
 
     const newCellar = () => {
 
+    };
+
+    const openInviteModal = () => {
+        setInviteIdentifier("");
+        setIsInviteOpen(true);
+    };
+
+    const closeInviteModal = () => {
+        if (isInviting) return;
+        setIsInviteOpen(false);
+    };
+
+    const submitInvite = async () => {
+        const identifier = inviteIdentifier.trim();
+        if (!identifier || !organisationId) return;
+
+        try {
+            setIsInviting(true);
+            await inviteToOrganisation(organisationId, identifier);
+            alert("Invitation sent successfully");
+            setIsInviteOpen(false);
+        } catch (err: any) {
+            console.error(err);
+            handleUnauthorised(err);
+        } finally {
+            setIsInviting(false);
+        }
     };
 
     return (
@@ -66,7 +101,35 @@ export default function OrganisationPage() {
                 <button key="new org" type="button" onClick={() => newCellar()}>
                     New Cellar
                 </button>
+                {accessLevel === "Owner" && (
+                    <button key="add member" type="button" onClick={openInviteModal} style={{ marginLeft: "10px" }}>
+                        Add Member
+                    </button>
+                )}
             </div>
+
+            {isInviteOpen && (
+                <div className="modal-overlay" onClick={closeInviteModal}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Invite Member</h3>
+                        <input
+                            type="text"
+                            value={inviteIdentifier}
+                            onChange={(e) => setInviteIdentifier(e.target.value)}
+                            placeholder="Enter username or email"
+                            autoFocus
+                        />
+                        <div className="modal-actions">
+                            <button type="button" onClick={closeInviteModal} disabled={isInviting}>
+                                Cancel
+                            </button>
+                            <button type="button" onClick={submitInvite} disabled={isInviting || !inviteIdentifier.trim()}>
+                                {isInviting ? "Inviting..." : "Invite"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 

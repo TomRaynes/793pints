@@ -14,18 +14,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/user")
-public class UserController extends ApplicationSupport
-{
-    private static final String USERNAME_REGEX = "^[A-Za-z0-9_\\- ]{3,32}$";
-    private static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
-    private static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+=\\-\\[\\]{};':\"\\\\|,.<>/?]).{8,}$";
+public class UserController extends ApplicationSupport {
 
     @PostMapping("/new")
     public ResponseEntity<?> createNewUser(@RequestBody NewUserRequest request) {
@@ -62,7 +57,10 @@ public class UserController extends ApplicationSupport
 
         userCollection.save(user);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        String token = Utils.generateToken(user.getId());
+        LoginResponse response = new LoginResponse().setToken(token);
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
@@ -93,16 +91,26 @@ public class UserController extends ApplicationSupport
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String token = "Bearer " + Utils.generateToken(user.getId());
+        String token = Utils.generateToken(user.getId());
         LoginResponse response = new LoginResponse().setToken(token);
 
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("verify_token")
+    @GetMapping("/verify_token")
     public ResponseEntity<?> verifyToken(@RequestHeader("Authorization") String token) {
         return getUser(token) == null
                 ? ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()
                 : ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/invitations")
+    public ResponseEntity<?> getInvitations(@RequestHeader("Authorization") String token) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(invitationCollection.findByRecipientUserId(user.getId()));
     }
 }

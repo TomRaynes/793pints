@@ -1,5 +1,6 @@
-package com.pints793.cask;
+package com.pints793.mongo;
 
+import com.pints793.cask.Cask;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

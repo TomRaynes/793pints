@@ -1,13 +1,18 @@
 package com.pints793;
 
-import com.pints793.cask.CaskRepository;
+import com.pints793.mongo.CaskRepository;
 import com.pints793.cellar.Cellar;
-import com.pints793.cellar.CellarRepository;
+import com.pints793.mongo.CellarRepository;
+import com.pints793.mongo.InvitationRepository;
 import com.pints793.organisation.Organisation;
-import com.pints793.organisation.OrganisationRepository;
+import com.pints793.mongo.OrganisationRepository;
+import com.pints793.organisation.OrganisationException;
 import com.pints793.user.User;
-import com.pints793.user.UserRepository;
+import com.pints793.mongo.UserRepository;
+import com.pints793.user.UserException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -21,6 +26,11 @@ public abstract class ApplicationSupport {
     @Autowired protected CaskRepository caskCollection;
     @Autowired protected UserRepository userCollection;
     @Autowired protected OrganisationRepository organisationCollection;
+    @Autowired protected InvitationRepository invitationCollection;
+
+    protected static final String USERNAME_REGEX = "^[A-Za-z0-9_\\- ]{3,32}$";
+    protected static final String EMAIL_REGEX = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+    protected static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+=\\-\\[\\]{};':\"\\\\|,.<>/?]).{8,}$";
 
     private static final String BEARER = "Bearer ";
 
@@ -65,4 +75,17 @@ public abstract class ApplicationSupport {
                                                                  .setName(org.getName())
                         )));
         return organisations;
-    }}
+    }
+
+    protected boolean addUserToOrganisation(User user, Organisation organisation) {
+        try {
+            organisation.addMember(user.getId());
+            user.addOrganisation(organisation.getId());
+        } catch (OrganisationException | UserException e) {
+            return false;
+        }
+        organisationCollection.save(organisation);
+        userCollection.save(user);
+        return true;
+    }
+}

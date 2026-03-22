@@ -4,5 +4,6 @@ public enum IdType {
     USER,
     ORGANISATION,
     CELLAR,
-    CASK
+    CASK,
+    INVITATION
 }

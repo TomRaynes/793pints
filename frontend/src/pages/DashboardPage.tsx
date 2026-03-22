@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-
 export default function DashboardPage() {
     const navigate = useNavigate();
 
@@ -16,7 +15,7 @@ export default function DashboardPage() {
                 <button type="button">
                     Account
                 </button>
-                <button type="button">
+                <button type="button" onClick={() => navigate("/invitations")}>
                     Invitations
                 </button>
                 <button type="button" onClick={() => navigate("/organisations")}>

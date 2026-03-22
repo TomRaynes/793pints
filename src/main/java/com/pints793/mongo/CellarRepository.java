@@ -1,5 +1,6 @@
-package com.pints793.cellar;
+package com.pints793.mongo;
 
+import com.pints793.cellar.Cellar;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;

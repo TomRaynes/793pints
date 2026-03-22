@@ -1,5 +1,6 @@
-package com.pints793.user;
+package com.pints793.mongo;
 
+import com.pints793.user.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
