@@ -2,9 +2,6 @@ package com.pints793.cask;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import java.util.Arrays;
-import java.util.List;
-
 public enum CaskState {
     DELIVERED("delivered"),
     RACKED("racked"),

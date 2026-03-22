@@ -6,7 +6,11 @@ import com.pints793.Utils;
 import org.springframework.data.annotation.Id;
 
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.Duration;
 import java.time.OffsetDateTime;
+
+import static java.time.OffsetDateTime.now;
 
 @Document(collection = "Cask")
 public class Cask implements DefaultConfig {
@@ -32,7 +36,7 @@ public class Cask implements DefaultConfig {
         this.name = name;
         this.cellarId = cellarId;
         this.state = state != null ? state : CaskState.DELIVERED;
-        this.stateChangeTimestamp = OffsetDateTime.now().toString();
+        this.stateChangeTimestamp = now().toString();
         this.rackCooldownHours = RACK_COOLDOWN_HOURS_DEFAULT;
         this.ventCooldownHours = VENT_COOLDOWN_HOURS_DEFAULT;
         this.tapCooldownHours = TAP_COOLDOWN_HOURS_DEFAULT;
@@ -72,17 +76,16 @@ public class Cask implements DefaultConfig {
 
     public Cask setState(CaskState state) {
         this.state = state;
-        this.stateChangeTimestamp = OffsetDateTime.now().toString();
+        this.stateChangeTimestamp = now().toString();
         return this;
     }
 
     public String getStateChangeTimestamp() {
-        OffsetDateTime time = OffsetDateTime.parse(stateChangeTimestamp);
-        OffsetDateTime now = OffsetDateTime.now();
-
-        time.plusHours(24L).isAfter(now);
-
         return stateChangeTimestamp;
+    }
+
+    public OffsetDateTime getStateChangeTime() {
+        return OffsetDateTime.parse(stateChangeTimestamp);
     }
 
     public Cask setStateChangeTimestamp(String stateChangeTimestamp) {
@@ -165,7 +168,12 @@ public class Cask implements DefaultConfig {
 
     public Cask progressState() {
         state = state.getNextState();
-        stateChangeTimestamp = OffsetDateTime.now().toString();
+        stateChangeTimestamp = now().toString();
         return this;
+    }
+
+    public void updateState() {
+        long hoursSinceStateChange = Duration.between(getStateChangeTime(), now()).toHours();
+
     }
 }

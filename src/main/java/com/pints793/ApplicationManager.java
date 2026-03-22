@@ -37,9 +37,7 @@ public class ApplicationManager extends ApplicationSupport {
                 if (!cask.getState().hasCooldown() || cooldown == null) {
                     continue;
                 }
-                OffsetDateTime stateChangeTime = OffsetDateTime.parse(cask.getStateChangeTimestamp());
-
-                if (currentTime.isAfter(stateChangeTime.plusHours(cooldown))) {
+                if (currentTime.isAfter(cask.getStateChangeTime().plusHours(cooldown))) {
                     cask.progressState();
                     caskCollection.save(cask);
                 }
