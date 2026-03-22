@@ -40,6 +40,7 @@ import CellarPage from "./pages/CellarPage";
 import ChooseOrganisationPage from "./pages/ChooseOrganisationPage.tsx";
 import { AuthProvider } from "./context/AuthContext";
 import OrganisationPage from "./pages/OrganisationPage.tsx";
+import DashboardPage from "./pages/DashboardPage.tsx";
 
 function App() {
     return (
@@ -47,8 +48,9 @@ function App() {
             <BrowserRouter>
                 <Routes>
                     <Route path="/" element={<LoginPage />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/cellar" element={<CellarPage />} />
-                    <Route path="/dashboard" element={<ChooseOrganisationPage />} />
+                    <Route path="/organisations" element={<ChooseOrganisationPage />} />
                     <Route path="/organisation" element={<OrganisationPage />} />
                 </Routes>
             </BrowserRouter>
