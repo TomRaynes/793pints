@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getInvitations, acceptInvite } from "../api/organisation";
 import { useHandleUnauthorised } from "../Utils";
-import { useNavigate } from "react-router-dom";
+import PageLayout from "../components/PageLayout";
 
 interface Invitation {
     id: string;
@@ -14,7 +14,6 @@ export default function InvitationsPage() {
     const [invitations, setInvitations] = useState<Invitation[]>([]);
     const [loading, setLoading] = useState(false);
     const handleUnauthorised = useHandleUnauthorised();
-    const navigate = useNavigate();
 
     const load = async () => {
         setLoading(true);
@@ -33,8 +32,8 @@ export default function InvitationsPage() {
             await acceptInvite(invitation.id);
             setInvitations(prev => prev.filter(inv => inv.id !== invitation.id));
         } catch (err: any) {
-             console.error(err);
-             handleUnauthorised(err);
+            console.error(err);
+            handleUnauthorised(err);
         }
     };
 
@@ -43,27 +42,30 @@ export default function InvitationsPage() {
     }, []);
 
     return (
-        <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h2>Invitations</h2>
-            </div>
+        <PageLayout backTo="/dashboard" backLabel="Dashboard">
+            <h1 className="page-title">Invitations</h1>
+            <p className="page-subtitle">Review and accept invitations to join organisations.</p>
 
             {loading ? (
-                <div>Loading...</div>
+                <div className="empty-state">
+                    <p className="empty-state-text">Loading…</p>
+                </div>
             ) : invitations.length === 0 ? (
-                <div>No invitations found.</div>
+                <div className="empty-state">
+                    <div className="empty-state-icon">✉️</div>
+                    <p className="empty-state-text">No pending invitations.</p>
+                </div>
             ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="list-stack">
                     {invitations.map(invitation => (
-                        <div key={invitation.id} className="cask-card-row">
-                            <div className="cask-card-button" style={{ cursor: "default" }}>
-                                <div className="cask-card">
-                                    <span style={{ marginRight: "10px" }}>{invitation.senderUsername} has invited you to join organisation <strong>{invitation.organisationName}</strong></span>
-                                </div>
+                        <div key={invitation.id} className="invitation-card">
+                            <div className="invitation-content">
+                                <span className="invitation-sender">{invitation.senderUsername}</span>
+                                {" has invited you to join "}
+                                <span className="invitation-org">{invitation.organisationName}</span>
                             </div>
                             <button
-                                className="cask-delete-button"
-                                style={{ borderColor: "#28a745", color: "#28a745", backgroundColor: "#f0fff4" }}
+                                className="btn btn-success btn-sm"
                                 onClick={() => handleAccept(invitation)}
                             >
                                 Accept
@@ -72,11 +74,6 @@ export default function InvitationsPage() {
                     ))}
                 </div>
             )}
-
-            <br/>
-             <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button onClick={() => navigate("/dashboard")}>Back to Dashboard</button>
-            </div>
-        </div>
+        </PageLayout>
     );
 }

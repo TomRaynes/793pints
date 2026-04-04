@@ -1,27 +1,32 @@
 import { useNavigate } from "react-router-dom";
+import PageLayout from "../components/PageLayout";
+
 export default function DashboardPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h2>Dashboard</h2>
-            </div>
+        <PageLayout>
+            <h1 className="page-title">Dashboard</h1>
+            <p className="page-subtitle">Welcome back. What would you like to manage?</p>
 
-            <div className="button-group" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <button type="button">
-                    Profile
+            <div className="dashboard-grid">
+                <button className="dashboard-card" type="button">
+                    <div className="dashboard-card-icon">👤</div>
+                    <span className="dashboard-card-label">Profile</span>
                 </button>
-                <button type="button">
-                    Account
+                <button className="dashboard-card" type="button">
+                    <div className="dashboard-card-icon">⚙️</div>
+                    <span className="dashboard-card-label">Account</span>
                 </button>
-                <button type="button" onClick={() => navigate("/invitations")}>
-                    Invitations
+                <button className="dashboard-card" type="button" onClick={() => navigate("/invitations")}>
+                    <div className="dashboard-card-icon">✉️</div>
+                    <span className="dashboard-card-label">Invitations</span>
                 </button>
-                <button type="button" onClick={() => navigate("/organisations")}>
-                    Organisations
+                <button className="dashboard-card" type="button" onClick={() => navigate("/organisations")}>
+                    <div className="dashboard-card-icon">🏢</div>
+                    <span className="dashboard-card-label">Organisations</span>
                 </button>
             </div>
-        </div>
+        </PageLayout>
     );
 }

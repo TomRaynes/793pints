@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { login } from "../api/auth";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import {HttpStatusCode} from "axios";
+import { HttpStatusCode } from "axios";
 
 export default function LoginPage() {
     const [identifier, setIdentifier] = useState("");
@@ -27,39 +27,56 @@ export default function LoginPage() {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === "Enter") handleLogin();
+    };
+
     return (
-        <div className="container" style={{
-            position: 'absolute',
-            top: '30%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)'
-        }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h1>793 Pints Login</h1>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <input
-                    placeholder="Email or username"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    className="inputElement"
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="inputElement"
-                />
-                <button onClick={handleLogin} className="inputElement">Login</button>
-            </div>
-
-            {incorrectAttempt && (
-                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 12 }}>
-                    <span style={{ color: '#b00020' }}>Incorrect username or password.</span>
+        <div className="login-wrapper">
+            <div className="login-card">
+                <div className="login-brand">
+                    793 <span className="login-brand-accent">Pints</span>
                 </div>
-            )}
+                <p className="login-tagline">Cask management, simplified.</p>
+
+                <div className="login-form" onKeyDown={handleKeyDown}>
+                    <div className="form-group">
+                        <label className="form-label">Email or Username</label>
+                        <input
+                            className="form-input"
+                            type="text"
+                            placeholder="Enter your email or username"
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label className="form-label">Password</label>
+                        <input
+                            className="form-input"
+                            type="password"
+                            placeholder="Enter your password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+
+                    {incorrectAttempt && (
+                        <div className="login-error">
+                            Incorrect username or password. Please try again.
+                        </div>
+                    )}
+
+                    <button
+                        className="btn btn-primary login-submit"
+                        onClick={handleLogin}
+                        style={{ width: "100%" }}
+                    >
+                        Sign In
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

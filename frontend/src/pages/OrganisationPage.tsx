@@ -1,9 +1,10 @@
-import {useLocation, useNavigate} from "react-router-dom";
-import type {EntityLabel} from "../types/models.ts";
-import {useEffect, useState} from "react";
-import {getAllCellars, newCellar as createCellar} from "../api/cellar.ts";
-import {useHandleUnauthorised} from "../Utils.tsx";
-import {getUserAccessLevel, inviteToOrganisation} from "../api/organisation.ts";
+import { useLocation, useNavigate } from "react-router-dom";
+import type { EntityLabel } from "../types/models.ts";
+import { useEffect, useState } from "react";
+import { getAllCellars, newCellar as createCellar } from "../api/cellar.ts";
+import { useHandleUnauthorised } from "../Utils.tsx";
+import { getUserAccessLevel, inviteToOrganisation } from "../api/organisation.ts";
+import PageLayout from "../components/PageLayout";
 
 export default function OrganisationPage() {
     const location = useLocation();
@@ -25,7 +26,6 @@ export default function OrganisationPage() {
     const load = async () => {
         try {
             const data = await getAllCellars(organisationId);
-            console.log(data);
             const rawList = Array.isArray(data) ? data : data?.cellars ?? [];
             setCellars([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
 
@@ -99,37 +99,41 @@ export default function OrganisationPage() {
     };
 
     return (
-        <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h2>{organisationName}</h2>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h3>Cellars</h3>
+        <PageLayout backTo="/organisations" backLabel="Organisations">
+            <div className="breadcrumb">
+                <button className="breadcrumb-link" onClick={() => navigate("/organisations")}>Organisations</button>
+                <span className="breadcrumb-sep">/</span>
+                <span className="breadcrumb-current">{organisationName}</span>
             </div>
 
+            <h1 className="page-title">{organisationName}</h1>
+            <p className="page-subtitle">Manage cellars within this organisation.</p>
 
             {cellars.length === 0 ? (
-                <div>You have no cellars</div>
+                <div className="empty-state">
+                    <div className="empty-state-icon">🏗️</div>
+                    <p className="empty-state-text">No cellars yet. Create one to start tracking casks.</p>
+                </div>
             ) : (
-                <div className="button-group" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="list-stack">
                     {cellars.map((cellar) => (
-                        <button key={cellar.id} type="button" onClick={() => goToCellar(cellar)}>
-                            {cellar.name}
+                        <button key={cellar.id} className="list-item" onClick={() => goToCellar(cellar)}>
+                            <div className="list-item-content">
+                                <div className="list-item-title">{cellar.name}</div>
+                            </div>
+                            <span className="list-item-chevron">›</span>
                         </button>
                     ))}
                 </div>
             )}
 
-            <br/>
-            <br/>
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button key="new org" type="button" onClick={() => newCellar()}>
-                    New Cellar
+            <div className="action-bar">
+                <button className="btn btn-primary" onClick={newCellar}>
+                    + New Cellar
                 </button>
                 {accessLevel === "Owner" && (
-                    <button key="add member" type="button" onClick={openInviteModal} style={{ marginLeft: "10px" }}>
-                        Add Member
+                    <button className="btn btn-secondary" onClick={openInviteModal}>
+                        + Add Member
                     </button>
                 )}
             </div>
@@ -137,20 +141,23 @@ export default function OrganisationPage() {
             {isInviteOpen && (
                 <div className="modal-overlay" onClick={closeInviteModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Invite Member</h3>
-                        <input
-                            type="text"
-                            value={inviteIdentifier}
-                            onChange={(e) => setInviteIdentifier(e.target.value)}
-                            placeholder="Enter username or email"
-                            autoFocus
-                        />
+                        <h3 className="modal-title">Invite Member</h3>
+                        <label className="modal-field">
+                            <span>Username or Email</span>
+                            <input
+                                type="text"
+                                value={inviteIdentifier}
+                                onChange={(e) => setInviteIdentifier(e.target.value)}
+                                placeholder="Enter username or email"
+                                autoFocus
+                            />
+                        </label>
                         <div className="modal-actions">
-                            <button type="button" onClick={closeInviteModal} disabled={isInviting}>
+                            <button className="btn btn-secondary" onClick={closeInviteModal} disabled={isInviting}>
                                 Cancel
                             </button>
-                            <button type="button" onClick={submitInvite} disabled={isInviting || !inviteIdentifier.trim()}>
-                                {isInviting ? "Inviting..." : "Invite"}
+                            <button className="btn btn-primary" onClick={submitInvite} disabled={isInviting || !inviteIdentifier.trim()}>
+                                {isInviting ? "Inviting…" : "Send Invite"}
                             </button>
                         </div>
                     </div>
@@ -160,26 +167,29 @@ export default function OrganisationPage() {
             {isNewCellarOpen && (
                 <div className="modal-overlay" onClick={closeNewCellarModal}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Cellar Name</h3>
-                        <input
-                            type="text"
-                            value={newCellarName}
-                            onChange={(e) => setNewCellarName(e.target.value)}
-                            placeholder="Enter cellar name"
-                            autoFocus
-                        />
+                        <h3 className="modal-title">New Cellar</h3>
+                        <label className="modal-field">
+                            <span>Cellar Name</span>
+                            <input
+                                type="text"
+                                value={newCellarName}
+                                onChange={(e) => setNewCellarName(e.target.value)}
+                                placeholder="Enter cellar name"
+                                autoFocus
+                            />
+                        </label>
                         <div className="modal-actions">
-                            <button type="button" onClick={closeNewCellarModal} disabled={isCreatingCellar}>
+                            <button className="btn btn-secondary" onClick={closeNewCellarModal} disabled={isCreatingCellar}>
                                 Cancel
                             </button>
-                            <button type="button" onClick={submitNewCellar} disabled={isCreatingCellar || !newCellarName.trim()}>
-                                {isCreatingCellar ? "Creating..." : "Create"}
+                            <button className="btn btn-primary" onClick={submitNewCellar} disabled={isCreatingCellar || !newCellarName.trim()}>
+                                {isCreatingCellar ? "Creating…" : "Create"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
-        </div>
+        </PageLayout>
     );
 
 }

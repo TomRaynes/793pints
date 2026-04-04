@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import type {Cask, CaskState} from "../types/models";
+import type { Cask, CaskState } from "../types/models";
 import { updateCask as updateCaskApi, removeCask as removeCaskApi } from "../api/cask";
-import {normalizeState} from "../pages/CellarPage.tsx";
+import { normalizeState } from "../pages/CellarPage.tsx";
 
 const caskStates: CaskState[] = [
     "Delivered",
@@ -182,42 +182,47 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onR
 
     return (
         <>
-            <div className="cask-card-row">
-                <button type="button" className="cask-card-button" onClick={openEdit}>
-                    <div className="cask-card">
-                        <strong>{cask.caskName}</strong>
-                        <div>Status: {cask.state}</div>
+            <div className="cask-row">
+                <button type="button" className="cask-card" onClick={openEdit}>
+                    <div className="cask-card-info">
+                        <div className="cask-card-name">{cask.caskName}</div>
+                        <div className="cask-card-state">{cask.state}</div>
                     </div>
-                    <div>
-                        {remainingText ? `${remainingText} remaining` : null}
-                    </div>
+                    {remainingText && (
+                        <div className="cask-card-timer">
+                            <span className="timer-icon">⏱</span>
+                            {remainingText}
+                        </div>
+                    )}
                 </button>
-                <button type="button" className="cask-delete-button" onClick={openDelete}>
-                    Delete
+                <button type="button" className="cask-delete-btn" onClick={openDelete} title="Delete cask">
+                    ✕
                 </button>
             </div>
 
-            {isDeleteOpen ? (
+            {isDeleteOpen && (
                 <div className="modal-overlay" onClick={closeDelete}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Delete Cask</h3>
-                        <p>Are you sure you want to delete "{cask.caskName}"?</p>
+                        <h3 className="modal-title">Delete Cask</h3>
+                        <p className="modal-danger-text">
+                            Are you sure you want to delete "{cask.caskName}"? This action cannot be undone.
+                        </p>
                         <div className="modal-actions">
-                            <button type="button" onClick={closeDelete} disabled={isDeleting}>
+                            <button className="btn btn-secondary" onClick={closeDelete} disabled={isDeleting}>
                                 Cancel
                             </button>
-                            <button type="button" onClick={confirmDelete} disabled={isDeleting}>
-                                {isDeleting ? "Deleting..." : "Delete"}
+                            <button className="btn btn-danger-fill" onClick={confirmDelete} disabled={isDeleting}>
+                                {isDeleting ? "Deleting…" : "Delete"}
                             </button>
                         </div>
                     </div>
                 </div>
-            ) : null}
+            )}
 
-            {isEditOpen ? (
+            {isEditOpen && (
                 <div className="modal-overlay" onClick={closeEdit}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Edit Cask</h3>
+                        <h3 className="modal-title">Edit Cask</h3>
                         <label className="modal-field">
                             <span>Cask Name</span>
                             <input
@@ -282,16 +287,16 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onR
                             />
                         </label>
                         <div className="modal-actions">
-                            <button type="button" onClick={closeEdit} disabled={isSaving}>
+                            <button className="btn btn-secondary" onClick={closeEdit} disabled={isSaving}>
                                 Cancel
                             </button>
-                            <button type="button" onClick={saveChanges} disabled={isSaving || !editName.trim()}>
-                                {isSaving ? "Saving..." : "Save"}
+                            <button className="btn btn-primary" onClick={saveChanges} disabled={isSaving || !editName.trim()}>
+                                {isSaving ? "Saving…" : "Save Changes"}
                             </button>
                         </div>
                     </div>
                 </div>
-            ) : null}
+            )}
         </>
     );
 }

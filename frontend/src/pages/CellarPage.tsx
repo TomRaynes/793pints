@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { getAllCasks, createCask } from "../api/cask";
-import type {Cask, CaskState, EntityLabel} from "../types/models";
+import type { Cask, CaskState, EntityLabel } from "../types/models";
 import StatusGroup from "../components/StatusGroup";
-import {useLocation} from "react-router-dom";
-import {useHandleUnauthorised} from "../Utils.tsx";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useHandleUnauthorised } from "../Utils.tsx";
+import PageLayout from "../components/PageLayout";
 
 const statuses = [
     "Delivered",
@@ -91,6 +92,7 @@ export default function CellarPage() {
     const [newCaskName, setNewCaskName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
     const location = useLocation();
+    const navigate = useNavigate();
     const state = location.state as CellarLocationState;
 
     const organisationId = state?.organisationId ?? null;
@@ -162,14 +164,26 @@ export default function CellarPage() {
         setCasks((prev) => prev.filter((cask) => cask.caskId !== caskId));
     };
 
+    const totalCasks = casks.length;
+
     return (
-        <div className="container">
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <h2>{cellarName}</h2>
+        <PageLayout backTo="/organisation" backLabel="Back">
+            <div className="breadcrumb">
+                <button className="breadcrumb-link" onClick={() => navigate("/organisations")}>Organisations</button>
+                <span className="breadcrumb-sep">/</span>
+                <button className="breadcrumb-link" onClick={() => navigate(-1)}>Cellar</button>
+                <span className="breadcrumb-sep">/</span>
+                <span className="breadcrumb-current">{cellarName}</span>
             </div>
 
+            <h1 className="page-title">{cellarName}</h1>
+            <p className="page-subtitle">{totalCasks} cask{totalCasks !== 1 ? "s" : ""} in this cellar</p>
+
             {casks.length === 0 ? (
-                <div>No casks found for this cellar.</div>
+                <div className="empty-state">
+                    <div className="empty-state-icon">🛢️</div>
+                    <p className="empty-state-text">No casks in this cellar yet. Add one to get started.</p>
+                </div>
             ) : (
                 statuses.map((status) => (
                     <StatusGroup
@@ -185,37 +199,37 @@ export default function CellarPage() {
                 ))
             )}
 
-            <br/>
-            <br/>
-
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-                <button key="new org" type="button" onClick={() => newCask()}>
-                    New Cask
+            <div className="action-bar">
+                <button className="btn btn-primary" onClick={newCask}>
+                    + New Cask
                 </button>
             </div>
 
-            {isNewCaskOpen ? (
+            {isNewCaskOpen && (
                 <div className="modal-overlay" onClick={closeNewCask}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
-                        <h3>Cask Name</h3>
-                        <input
-                            type="text"
-                            value={newCaskName}
-                            onChange={(e) => setNewCaskName(e.target.value)}
-                            placeholder="Enter cask name"
-                            autoFocus
-                        />
+                        <h3 className="modal-title">New Cask</h3>
+                        <label className="modal-field">
+                            <span>Cask Name</span>
+                            <input
+                                type="text"
+                                value={newCaskName}
+                                onChange={(e) => setNewCaskName(e.target.value)}
+                                placeholder="Enter cask name"
+                                autoFocus
+                            />
+                        </label>
                         <div className="modal-actions">
-                            <button type="button" onClick={closeNewCask} disabled={isCreating}>
+                            <button className="btn btn-secondary" onClick={closeNewCask} disabled={isCreating}>
                                 Cancel
                             </button>
-                            <button type="button" onClick={submitNewCask} disabled={isCreating || !newCaskName.trim()}>
-                                {isCreating ? "Creating..." : "Create"}
+                            <button className="btn btn-primary" onClick={submitNewCask} disabled={isCreating || !newCaskName.trim()}>
+                                {isCreating ? "Creating…" : "Create"}
                             </button>
                         </div>
                     </div>
                 </div>
-            ) : null}
-        </div>
+            )}
+        </PageLayout>
     );
 }
