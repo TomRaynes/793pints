@@ -235,6 +235,5 @@ public class UserController extends ApplicationSupport {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.ok(sender.getProfilePicture());
-
     }
 }

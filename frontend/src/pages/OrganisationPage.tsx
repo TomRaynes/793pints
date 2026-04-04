@@ -18,6 +18,7 @@ export default function OrganisationPage() {
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [inviteIdentifier, setInviteIdentifier] = useState("");
     const [isInviting, setIsInviting] = useState(false);
+    const [inviteSuccess, setInviteSuccess] = useState<string | null>(null);
     const [isNewCellarOpen, setIsNewCellarOpen] = useState(false);
     const [newCellarName, setNewCellarName] = useState("");
     const [isCreatingCellar, setIsCreatingCellar] = useState(false);
@@ -88,8 +89,9 @@ export default function OrganisationPage() {
         try {
             setIsInviting(true);
             await inviteToOrganisation(organisationId, identifier);
-            alert("Invitation sent successfully");
             setIsInviteOpen(false);
+            setInviteSuccess(`Invitation sent to ${identifier}`);
+            setTimeout(() => setInviteSuccess(null), 3000);
         } catch (err: any) {
             console.error(err);
             handleUnauthorised(err);
@@ -108,6 +110,13 @@ export default function OrganisationPage() {
 
             <h1 className="page-title">{organisationName}</h1>
             <p className="page-subtitle">Manage cellars within this organisation.</p>
+
+            {inviteSuccess && (
+                <div className="toast toast-success">
+                    <span>✓ {inviteSuccess}</span>
+                    <button className="toast-dismiss" onClick={() => setInviteSuccess(null)}>✕</button>
+                </div>
+            )}
 
             {cellars.length === 0 ? (
                 <div className="empty-state">
