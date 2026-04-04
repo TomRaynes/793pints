@@ -7,9 +7,10 @@ interface Props {
     backTo?: string;
     backLabel?: string;
     backState?: unknown;
+    onBack?: () => void;
 }
 
-export default function PageLayout({ children, backTo, backLabel, backState }: Props) {
+export default function PageLayout({ children, backTo, backLabel, backState, onBack }: Props) {
     const navigate = useNavigate();
     const { setToken } = useContext(AuthContext);
 
@@ -18,6 +19,12 @@ export default function PageLayout({ children, backTo, backLabel, backState }: P
         navigate("/");
     };
 
+    const handleBack = onBack
+        ? onBack
+        : backTo
+            ? () => navigate(backTo, { state: backState })
+            : undefined;
+
     return (
         <div className="page-shell">
             <header className="page-header">
@@ -25,8 +32,8 @@ export default function PageLayout({ children, backTo, backLabel, backState }: P
                     793 Pints
                 </span>
                 <div className="nav-actions">
-                    {backTo && (
-                        <button className="btn btn-nav" onClick={() => navigate(backTo, { state: backState })}>
+                    {handleBack && (
+                        <button className="btn btn-nav" onClick={handleBack}>
                             ← {backLabel || "Back"}
                         </button>
                     )}

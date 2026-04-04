@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { getInvitations, acceptInvite } from "../api/organisation";
-import { getInvitationImage } from "../api/user";
+import { getProfileImage } from "../api/user";
 import { useHandleUnauthorised } from "../Utils";
 import PageLayout from "../components/PageLayout";
 
@@ -27,7 +27,7 @@ export default function InvitationsPage() {
             const imageMap: Record<string, string | null> = {};
             await Promise.all(
                 data.map(async (inv) => {
-                    imageMap[inv.id] = await getInvitationImage(inv.id);
+                    imageMap[inv.id] = await getProfileImage(inv.id);
                 })
             );
             setSenderImages(imageMap);

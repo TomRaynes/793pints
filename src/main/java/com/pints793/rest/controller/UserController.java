@@ -140,6 +140,30 @@ public class UserController extends ApplicationSupport {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String token,
+                                        @PathVariable("userId") String userId) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        User user2 = userCollection.findById(userId).orElse(null);
+
+        if (user2 == null || !usersShareOrganisation(user, user2)) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        UserProfileResponse response = new UserProfileResponse()
+                .setUsername(user2.getUsername())
+                .setEmail(user2.getEmail())
+                .setName(user2.getName())
+                .setBio(user2.getBio())
+                .setProfilePicture(user2.getProfilePicture());
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/profile/update")
     public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
                                            @RequestBody UpdateProfileRequest request) {
@@ -209,29 +233,43 @@ public class UserController extends ApplicationSupport {
         }
     }
 
-    @GetMapping("/invitation_image/{invitationId}")
+    @GetMapping("/profile_image/{id}")
     public ResponseEntity<?> getInvitationImage(@RequestHeader("Authorization") String token,
-                                                @PathVariable("invitationId") String invitationId) {
-        User recipient = getUser(token);
+                                                @PathVariable("id") String id) {
+        User user = getUser(token);
 
-        if (recipient == null) {
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Invitation invitation = invitationCollection.findById(invitationId).orElse(null);
+        if (id.startsWith(IdType.INVITATION.toString())) {
+            Invitation invitation = invitationCollection.findById(id).orElse(null);
 
-        if (invitation == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-        if (!invitation.getRecipientUserId().equals(recipient.getId())) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            if (invitation == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            if (!invitation.getRecipientUserId().equals(user.getId())) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+
+            User sender = userCollection.findById(invitation.getSenderUserId()).orElse(null);
+
+            if (sender == null) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            }
+            return ResponseEntity.ok(sender.getProfilePicture());
+        } else if (id.startsWith(IdType.USER.toString())) {
+            User user2 = userCollection.findById(id).orElse(null);
+
+            if (user2 == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+            if (usersShareOrganisation(user, user2)) {
+                return ResponseEntity.ok(user2.getProfilePicture());
+            }
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        User sender = userCollection.findById(invitation.getSenderUserId()).orElse(null);
-
-        if (sender == null) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        return ResponseEntity.ok(sender.getProfilePicture());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
     }
 }

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { getAllCellars, newCellar as createCellar } from "../api/cellar.ts";
 import { useHandleUnauthorised } from "../Utils.tsx";
 import { getUserAccessLevel, inviteToOrganisation, getMembers } from "../api/organisation.ts";
+import { getProfileImage } from "../api/user.ts";
 import PageLayout from "../components/PageLayout";
 
 export default function OrganisationPage() {
@@ -25,6 +26,7 @@ export default function OrganisationPage() {
     const [isMembersOpen, setIsMembersOpen] = useState(false);
     const [membersData, setMembersData] = useState<{ admins: Record<string, string>; members: Record<string, string> } | null>(null);
     const [membersLoading, setMembersLoading] = useState(false);
+    const [memberImages, setMemberImages] = useState<Record<string, string | null>>({});
     const navigate = useNavigate();
 
     const load = async () => {
@@ -88,6 +90,18 @@ export default function OrganisationPage() {
         try {
             const data = await getMembers(organisationId);
             setMembersData(data);
+
+            const allUserIds = [
+                ...Object.keys(data.admins ?? {}),
+                ...Object.keys(data.members ?? {}),
+            ];
+            const imageMap: Record<string, string | null> = {};
+            await Promise.all(
+                allUserIds.map(async (userId) => {
+                    imageMap[userId] = await getProfileImage(userId);
+                })
+            );
+            setMemberImages(imageMap);
         } catch (err: any) {
             handleUnauthorised(err);
         } finally {
@@ -234,13 +248,27 @@ export default function OrganisationPage() {
                         ) : membersData ? (
                             <div className="members-list">
                                 {Object.entries(membersData.admins).map(([id, username]) => (
-                                    <div key={id} className="member-row">
+                                    <div key={id} className="member-row member-row-clickable" onClick={() => navigate("/member", { state: { userId: id } })}>
+                                        <div className="member-avatar">
+                                            {memberImages[id] ? (
+                                                <img src={memberImages[id]!} alt={username} className="member-avatar-img" />
+                                            ) : (
+                                                <span className="member-avatar-placeholder">{username.charAt(0).toUpperCase()}</span>
+                                            )}
+                                        </div>
                                         <span className="member-name">{username}</span>
                                         <span className="member-badge member-badge-admin">Admin</span>
                                     </div>
                                 ))}
                                 {Object.entries(membersData.members).map(([id, username]) => (
-                                    <div key={id} className="member-row">
+                                    <div key={id} className="member-row member-row-clickable" onClick={() => navigate("/member", { state: { userId: id } })}>
+                                        <div className="member-avatar">
+                                            {memberImages[id] ? (
+                                                <img src={memberImages[id]!} alt={username} className="member-avatar-img" />
+                                            ) : (
+                                                <span className="member-avatar-placeholder">{username.charAt(0).toUpperCase()}</span>
+                                            )}
+                                        </div>
                                         <span className="member-name">{username}</span>
                                     </div>
                                 ))}

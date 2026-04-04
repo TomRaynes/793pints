@@ -88,4 +88,15 @@ public abstract class ApplicationSupport {
         userCollection.save(user);
         return true;
     }
+
+    protected boolean usersShareOrganisation(User user1, User user2) {
+        for (String user1org : user1.getOrganisationIds()) {
+            for (String user2org : user2.getOrganisationIds()) {
+                if (user1org.equals(user2org)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
