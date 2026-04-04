@@ -3,6 +3,7 @@ package com.pints793.rest.controller;
 import com.pints793.ApplicationSupport;
 import com.pints793.IdType;
 import com.pints793.Utils;
+import com.pints793.organisation.Invitation;
 import com.pints793.user.LoginRequest;
 import com.pints793.user.LoginResponse;
 import com.pints793.user.NewUserRequest;
@@ -12,6 +13,7 @@ import com.pints793.user.UserProfileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -23,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -205,5 +209,32 @@ public class UserController extends ApplicationSupport {
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    @GetMapping("/invitation_image/{invitationId}")
+    public ResponseEntity<?> getInvitationImage(@RequestHeader("Authorization") String token,
+                                                @PathVariable("invitationId") String invitationId) {
+        User recipient = getUser(token);
+
+        if (recipient == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Invitation invitation = invitationCollection.findById(invitationId).orElse(null);
+
+        if (invitation == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        if (!invitation.getRecipientUserId().equals(recipient.getId())) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        User sender = userCollection.findById(invitation.getSenderUserId()).orElse(null);
+
+        if (sender == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.ok(sender.getProfilePicture());
+
     }
 }

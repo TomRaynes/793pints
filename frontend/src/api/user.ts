@@ -18,3 +18,13 @@ export const uploadProfilePicture = async (file: File) => {
     });
     return res.data;
 };
+
+export const getInvitationImage = async (invitationId: string): Promise<string | null> => {
+    try {
+        const res = await api.get(`/user/invitation_image/${invitationId}`);
+        return res.data || null;
+    } catch {
+        return null;
+    }
+};
+

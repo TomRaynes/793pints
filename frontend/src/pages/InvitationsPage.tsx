@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getInvitations, acceptInvite } from "../api/organisation";
+import { getInvitationImage } from "../api/user";
 import { useHandleUnauthorised } from "../Utils";
 import PageLayout from "../components/PageLayout";
 
@@ -12,6 +13,7 @@ interface Invitation {
 
 export default function InvitationsPage() {
     const [invitations, setInvitations] = useState<Invitation[]>([]);
+    const [senderImages, setSenderImages] = useState<Record<string, string | null>>({});
     const [loading, setLoading] = useState(false);
     const handleUnauthorised = useHandleUnauthorised();
 
@@ -19,7 +21,16 @@ export default function InvitationsPage() {
         setLoading(true);
         try {
             const res = await getInvitations();
-            setInvitations(res.data || []);
+            const data: Invitation[] = res.data || [];
+            setInvitations(data);
+
+            const imageMap: Record<string, string | null> = {};
+            await Promise.all(
+                data.map(async (inv) => {
+                    imageMap[inv.id] = await getInvitationImage(inv.id);
+                })
+            );
+            setSenderImages(imageMap);
         } catch (err: any) {
             handleUnauthorised(err);
         } finally {
@@ -57,21 +68,33 @@ export default function InvitationsPage() {
                 </div>
             ) : (
                 <div className="list-stack">
-                    {invitations.map(invitation => (
-                        <div key={invitation.id} className="invitation-card">
-                            <div className="invitation-content">
-                                <span className="invitation-sender">{invitation.senderUsername}</span>
-                                {" has invited you to join "}
-                                <span className="invitation-org">{invitation.organisationName}</span>
+                    {invitations.map(invitation => {
+                        const image = senderImages[invitation.id];
+                        return (
+                            <div key={invitation.id} className="invitation-card">
+                                <div className="invitation-avatar">
+                                    {image ? (
+                                        <img src={image} alt={invitation.senderUsername} className="invitation-avatar-img" />
+                                    ) : (
+                                        <span className="invitation-avatar-placeholder">
+                                            {invitation.senderUsername.charAt(0).toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="invitation-content">
+                                    <span className="invitation-sender">{invitation.senderUsername}</span>
+                                    {" has invited you to join "}
+                                    <span className="invitation-org">{invitation.organisationName}</span>
+                                </div>
+                                <button
+                                    className="btn btn-success btn-sm"
+                                    onClick={() => handleAccept(invitation)}
+                                >
+                                    Accept
+                                </button>
                             </div>
-                            <button
-                                className="btn btn-success btn-sm"
-                                onClick={() => handleAccept(invitation)}
-                            >
-                                Accept
-                            </button>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </PageLayout>
