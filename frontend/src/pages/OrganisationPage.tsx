@@ -41,7 +41,7 @@ export default function OrganisationPage() {
     }, []);
 
     const goToCellar = (cellar: EntityLabel) => {
-        navigate("/cellar", { state: { organisationId: organisationId, cellar: cellar } });
+        navigate("/cellar", { state: { organisationId: organisationId, organisationName: organisationName, cellar: cellar } });
     };
 
     const newCellar = () => {

@@ -83,6 +83,7 @@ export function refreshCaskState(cask: Cask): Cask {
 
 type CellarLocationState = {
     organisationId: string;
+    organisationName: string;
     cellar: EntityLabel;
 };
 
@@ -96,6 +97,7 @@ export default function CellarPage() {
     const state = location.state as CellarLocationState;
 
     const organisationId = state?.organisationId ?? null;
+    const organisationName = state?.organisationName ?? null;
     const cellarId = state?.cellar.id ?? null;
     const cellarName = state?.cellar.name ?? null;
 
@@ -171,7 +173,7 @@ export default function CellarPage() {
             <div className="breadcrumb">
                 <button className="breadcrumb-link" onClick={() => navigate("/organisations")}>Organisations</button>
                 <span className="breadcrumb-sep">/</span>
-                <button className="breadcrumb-link" onClick={() => navigate(-1)}>Cellar</button>
+                <button className="breadcrumb-link" onClick={() => navigate(-1)}>{organisationName}</button>
                 <span className="breadcrumb-sep">/</span>
                 <span className="breadcrumb-current">{cellarName}</span>
             </div>

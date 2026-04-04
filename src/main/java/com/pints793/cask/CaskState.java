@@ -29,7 +29,7 @@ public enum CaskState {
         if (state == null) {
             return null;
         }
-        return CaskState.valueOf(state.toUpperCase());
+        return CaskState.valueOf(state.toUpperCase().replace(' ', '_'));
     }
 
     public boolean hasCooldown() {
