@@ -169,11 +169,11 @@ export default function CellarPage() {
     const totalCasks = casks.length;
 
     return (
-        <PageLayout backTo="/organisation" backLabel="Back">
+        <PageLayout backTo="/organisation" backLabel={organisationName ?? "Back"} backState={{ id: organisationId, name: organisationName }}>
             <div className="breadcrumb">
                 <button className="breadcrumb-link" onClick={() => navigate("/organisations")}>Organisations</button>
                 <span className="breadcrumb-sep">/</span>
-                <button className="breadcrumb-link" onClick={() => navigate(-1)}>{organisationName}</button>
+                <button className="breadcrumb-link" onClick={() => navigate("/organisation", { state: { id: organisationId, name: organisationName } })}>{organisationName}</button>
                 <span className="breadcrumb-sep">/</span>
                 <span className="breadcrumb-current">{cellarName}</span>
             </div>

@@ -6,9 +6,10 @@ interface Props {
     children: React.ReactNode;
     backTo?: string;
     backLabel?: string;
+    backState?: unknown;
 }
 
-export default function PageLayout({ children, backTo, backLabel }: Props) {
+export default function PageLayout({ children, backTo, backLabel, backState }: Props) {
     const navigate = useNavigate();
     const { setToken } = useContext(AuthContext);
 
@@ -25,7 +26,7 @@ export default function PageLayout({ children, backTo, backLabel }: Props) {
                 </span>
                 <div className="nav-actions">
                     {backTo && (
-                        <button className="btn btn-nav" onClick={() => navigate(backTo)}>
+                        <button className="btn btn-nav" onClick={() => navigate(backTo, { state: backState })}>
                             ← {backLabel || "Back"}
                         </button>
                     )}
