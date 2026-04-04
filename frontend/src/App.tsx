@@ -43,6 +43,7 @@ import OrganisationPage from "./pages/OrganisationPage.tsx";
 import DashboardPage from "./pages/DashboardPage.tsx";
 import InvitationsPage from "./pages/InvitationsPage.tsx";
 import ProfilePage from "./pages/ProfilePage.tsx";
+import EditProfilePage from "./pages/EditProfilePage.tsx";
 
 function App() {
     return (
@@ -52,6 +53,7 @@ function App() {
                     <Route path="/" element={<LoginPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/profile/edit" element={<EditProfilePage />} />
                     <Route path="/invitations" element={<InvitationsPage />} />
                     <Route path="/cellar" element={<CellarPage />} />
                     <Route path="/organisations" element={<ChooseOrganisationPage />} />

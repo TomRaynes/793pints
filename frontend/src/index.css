@@ -135,6 +135,45 @@ body {
   margin-bottom: var(--space-xs);
 }
 
+.page-title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.page-title-row .page-title {
+  margin-bottom: 0;
+}
+
+.btn-edit-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 19px;
+  height: 19px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: 0.6rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  font-family: inherit;
+  line-height: 1;
+}
+
+.btn-edit-icon-inner {
+  display: inline-block;
+  transform: rotate(90deg);
+}
+
+.btn-edit-icon:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
 .page-subtitle {
   font-size: 0.9rem;
   color: var(--color-text-secondary);
@@ -987,5 +1026,76 @@ body {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--color-success);
+}
+
+.profile-avatar-static {
+  cursor: default;
+}
+
+.profile-avatar-static .profile-avatar-overlay {
+  display: none;
+}
+
+.profile-readonly-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-md) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.profile-readonly-field:last-of-type {
+  border-bottom: none;
+}
+
+.profile-readonly-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-readonly-value {
+  font-size: 0.95rem;
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+.profile-readonly-bio {
+  white-space: pre-wrap;
+}
+
+.profile-avatar-clickable {
+  cursor: pointer;
+}
+
+.profile-avatar-clickable:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+
+/* ── Lightbox ── */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 35, 50, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  cursor: pointer;
+  animation: fadeIn 200ms ease;
+}
+
+.lightbox-img {
+  max-width: min(90vw, 500px);
+  max-height: 80vh;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  object-fit: contain;
+  cursor: default;
+  animation: slideUp 250ms ease;
 }
 
