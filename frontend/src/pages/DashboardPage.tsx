@@ -7,10 +7,10 @@ export default function DashboardPage() {
     return (
         <PageLayout>
             <h1 className="page-title">Dashboard</h1>
-            <p className="page-subtitle">Welcome back. What would you like to manage?</p>
+            <p className="page-subtitle">Welcome back!</p>
 
             <div className="dashboard-grid">
-                <button className="dashboard-card" type="button">
+                <button className="dashboard-card" type="button" onClick={() => navigate("/profile")}>
                     <div className="dashboard-card-icon">👤</div>
                     <span className="dashboard-card-label">Profile</span>
                 </button>

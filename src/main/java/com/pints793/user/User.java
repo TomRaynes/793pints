@@ -16,6 +16,12 @@ public class User {
     private String password;
     private Set<String> organisationIds;
 
+    // Profile
+    private String name;
+    private String profilePicture;
+    private String bio;
+
+
     public User() {
         organisationIds = new HashSet<>();
     }
@@ -83,5 +89,32 @@ public class User {
 
     public boolean isInOrganisation(String organisationId) {
         return organisationIds.contains(organisationId);
+    }
+
+    public String getProfilePicture() {
+        return profilePicture;
+    }
+
+    public User setProfilePicture(String profilePicture) {
+        this.profilePicture = profilePicture;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public User setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public User setBio(String bio) {
+        this.bio = bio;
+        return this;
     }
 }

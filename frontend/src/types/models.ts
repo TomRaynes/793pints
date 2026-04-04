@@ -41,3 +41,12 @@ export interface EntityLabel {
     id: string;
     name: string;
 }
+
+export interface UserProfile {
+    username: string;
+    email: string;
+    name: string | null;
+    bio: string | null;
+    profilePicture: string | null;
+}
+

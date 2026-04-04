@@ -6,7 +6,9 @@ import com.pints793.Utils;
 import com.pints793.user.LoginRequest;
 import com.pints793.user.LoginResponse;
 import com.pints793.user.NewUserRequest;
+import com.pints793.user.UpdateProfileRequest;
 import com.pints793.user.User;
+import com.pints793.user.UserProfileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +16,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -112,5 +118,92 @@ public class UserController extends ApplicationSupport {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(invitationCollection.findByRecipientUserId(user.getId()));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile(@RequestHeader("Authorization") String token) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        UserProfileResponse response = new UserProfileResponse()
+                .setUsername(user.getUsername())
+                .setEmail(user.getEmail())
+                .setName(user.getName())
+                .setBio(user.getBio())
+                .setProfilePicture(user.getProfilePicture());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/profile/update")
+    public ResponseEntity<?> updateProfile(@RequestHeader("Authorization") String token,
+                                           @RequestBody UpdateProfileRequest request) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (request.getName() != null) {
+            user.setName(request.getName().trim());
+        }
+        if (request.getBio() != null) {
+            user.setBio(request.getBio().trim());
+        }
+
+        userCollection.save(user);
+
+        UserProfileResponse response = new UserProfileResponse()
+                .setUsername(user.getUsername())
+                .setEmail(user.getEmail())
+                .setName(user.getName())
+                .setBio(user.getBio())
+                .setProfilePicture(user.getProfilePicture());
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/profile/picture")
+    public ResponseEntity<?> uploadProfilePicture(@RequestHeader("Authorization") String token,
+                                                  @RequestParam("file") MultipartFile file) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        if (file.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        if (file.getSize() > 2 * 1024 * 1024) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        try {
+            byte[] bytes = file.getBytes();
+            String base64 = "data:" + contentType + ";base64," + Base64.getEncoder().encodeToString(bytes);
+            user.setProfilePicture(base64);
+            userCollection.save(user);
+
+            UserProfileResponse response = new UserProfileResponse()
+                    .setUsername(user.getUsername())
+                    .setEmail(user.getEmail())
+                    .setName(user.getName())
+                    .setBio(user.getBio())
+                    .setProfilePicture(user.getProfilePicture());
+
+            return ResponseEntity.ok(response);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
