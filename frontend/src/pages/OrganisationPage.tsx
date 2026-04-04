@@ -1,7 +1,7 @@
 import {useLocation, useNavigate} from "react-router-dom";
 import type {EntityLabel} from "../types/models.ts";
 import {useEffect, useState} from "react";
-import {getAllCellars} from "../api/cellar.ts";
+import {getAllCellars, newCellar as createCellar} from "../api/cellar.ts";
 import {useHandleUnauthorised} from "../Utils.tsx";
 import {getUserAccessLevel, inviteToOrganisation} from "../api/organisation.ts";
 
@@ -17,6 +17,9 @@ export default function OrganisationPage() {
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [inviteIdentifier, setInviteIdentifier] = useState("");
     const [isInviting, setIsInviting] = useState(false);
+    const [isNewCellarOpen, setIsNewCellarOpen] = useState(false);
+    const [newCellarName, setNewCellarName] = useState("");
+    const [isCreatingCellar, setIsCreatingCellar] = useState(false);
     const navigate = useNavigate();
 
     const load = async () => {
@@ -42,7 +45,30 @@ export default function OrganisationPage() {
     };
 
     const newCellar = () => {
+        setNewCellarName("");
+        setIsNewCellarOpen(true);
+    };
 
+    const closeNewCellarModal = () => {
+        if (isCreatingCellar) return;
+        setIsNewCellarOpen(false);
+    };
+
+    const submitNewCellar = async () => {
+        const name = newCellarName.trim();
+        if (!name || !organisationId) return;
+
+        try {
+            setIsCreatingCellar(true);
+            await createCellar(name, organisationId);
+            setIsNewCellarOpen(false);
+            await load();
+        } catch (err: any) {
+            console.error(err);
+            handleUnauthorised(err);
+        } finally {
+            setIsCreatingCellar(false);
+        }
     };
 
     const openInviteModal = () => {
@@ -125,6 +151,29 @@ export default function OrganisationPage() {
                             </button>
                             <button type="button" onClick={submitInvite} disabled={isInviting || !inviteIdentifier.trim()}>
                                 {isInviting ? "Inviting..." : "Invite"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isNewCellarOpen && (
+                <div className="modal-overlay" onClick={closeNewCellarModal}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h3>Cellar Name</h3>
+                        <input
+                            type="text"
+                            value={newCellarName}
+                            onChange={(e) => setNewCellarName(e.target.value)}
+                            placeholder="Enter cellar name"
+                            autoFocus
+                        />
+                        <div className="modal-actions">
+                            <button type="button" onClick={closeNewCellarModal} disabled={isCreatingCellar}>
+                                Cancel
+                            </button>
+                            <button type="button" onClick={submitNewCellar} disabled={isCreatingCellar || !newCellarName.trim()}>
+                                {isCreatingCellar ? "Creating..." : "Create"}
                             </button>
                         </div>
                     </div>
