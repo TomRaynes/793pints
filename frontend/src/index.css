@@ -139,10 +139,15 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
+  margin-bottom: var(--space-xs);
 }
 
 .page-title-row .page-title {
   margin-bottom: 0;
+}
+
+.page-title-row-spread .page-title {
+  flex: 1;
 }
 
 .btn-edit-icon {
@@ -512,6 +517,17 @@ body {
   margin-bottom: var(--space-lg);
 }
 
+.modal-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.modal-title-row .modal-title {
+  margin-bottom: 0;
+}
+
 .modal-field {
   display: flex;
   flex-direction: column;
@@ -822,6 +838,46 @@ body {
 
 .toast-dismiss:hover {
   opacity: 1;
+}
+
+/* ── Members list ── */
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+}
+
+.member-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.member-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.member-badge-admin {
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
 }
 
 /* ── Empty states ── */

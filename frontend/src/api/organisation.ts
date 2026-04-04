@@ -43,3 +43,8 @@ export const acceptInvite = async (
     });
     return res.data;
 };
+
+export const getMembers = async (organisationId: string) => {
+    const res = await api.post(`/organisation/${organisationId}/members`);
+    return res.data;
+};
