@@ -157,6 +157,7 @@ public class CellarController extends ApplicationSupport {
                 entry.getValue().accept(cellar.getConfig(), field.getValue());
             }
         }
+        cellarCollection.save(cellar);
 
         if (!organisationUpdates.isEmpty()) {
             getOrganisation(cellar.getOrganisationId()).getCellars().stream()
@@ -164,11 +165,10 @@ public class CellarController extends ApplicationSupport {
                     .forEach(c -> {
                         for (Map.Entry<Field, BiConsumer<CellarConfig, Long>> entry : organisationUpdates) {
                             entry.getValue().accept(c.getConfig(), entry.getKey().getValue());
-                            cellarCollection.save(c);
                         }
+                        cellarCollection.save(c);
                     });
         }
-        cellarCollection.save(cellar);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }

@@ -22,9 +22,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import javax.imageio.ImageIO;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -271,5 +279,72 @@ public class UserController extends ApplicationSupport {
         }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+    }
+
+    @PostMapping("/profile_images")
+    public ResponseEntity<?> getProfileImages(@RequestHeader("Authorization") String token,
+                                              @RequestBody List<String> userIds) {
+        User caller = getUser(token);
+
+        if (caller == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        Map<String, String> result = new HashMap<>();
+
+        for (String userId : userIds) {
+            User target = userCollection.findById(userId).orElse(null);
+            if (target == null || !usersShareOrganisation(caller, target)) {
+                continue;
+            }
+            String picture = target.getProfilePicture();
+            if (picture != null) {
+                String thumbnail = generateThumbnail(picture, 48);
+                result.put(userId, thumbnail != null ? thumbnail : picture);
+            }
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
+    private String generateThumbnail(String dataUrl, int size) {
+        try {
+            // Parse "data:<mime>;base64,<data>"
+            int commaIdx = dataUrl.indexOf(',');
+            if (commaIdx < 0) return null;
+
+            String header = dataUrl.substring(0, commaIdx); // "data:image/jpeg;base64"
+            String base64Data = dataUrl.substring(commaIdx + 1);
+
+            byte[] imageBytes = Base64.getDecoder().decode(base64Data);
+            BufferedImage original = ImageIO.read(new ByteArrayInputStream(imageBytes));
+            if (original == null) return null;
+
+            int origW = original.getWidth();
+            int origH = original.getHeight();
+
+            if (origW <= size && origH <= size) {
+                return dataUrl; // Already small enough
+            }
+
+            // Scale down preserving aspect ratio
+            double scale = Math.min((double) size / origW, (double) size / origH);
+            int newW = Math.max(1, (int) (origW * scale));
+            int newH = Math.max(1, (int) (origH * scale));
+
+            BufferedImage thumbnail = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = thumbnail.createGraphics();
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            g.drawImage(original, 0, 0, newW, newH, null);
+            g.dispose();
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            ImageIO.write(thumbnail, "jpeg", out);
+            String thumbBase64 = Base64.getEncoder().encodeToString(out.toByteArray());
+
+            return "data:image/jpeg;base64," + thumbBase64;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

@@ -87,6 +87,10 @@ type CellarLocationState = {
     organisationId: string;
     organisationName: string;
     cellar: EntityLabel;
+    cachedMembers: { admins: Record<string, string>; members: Record<string, string> } | null;
+    cachedMemberImages: Record<string, string> | null;
+    cachedCellars: EntityLabel[] | null;
+    cachedAccessLevel: string | null;
 };
 
 export default function CellarPage() {
@@ -114,6 +118,19 @@ export default function CellarPage() {
     const organisationName = state?.organisationName ?? null;
     const cellarId = state?.cellar.id ?? null;
     const cellarName = state?.cellar.name ?? null;
+    const [cachedMembers] = useState(state?.cachedMembers ?? null);
+    const [cachedMemberImages] = useState<Record<string, string>>(state?.cachedMemberImages ?? {});
+    const [cachedCellars] = useState<EntityLabel[]>(state?.cachedCellars ?? []);
+    const [cachedAccessLevel] = useState<string | null>(state?.cachedAccessLevel ?? null);
+
+    const buildOrgState = () => ({
+        id: organisationId,
+        name: organisationName,
+        cachedCellars,
+        cachedAccessLevel,
+        cachedMembers,
+        cachedMemberImages,
+    });
 
     const handleUnauthorised = useHandleUnauthorised();
 
@@ -231,11 +248,11 @@ export default function CellarPage() {
     const totalCasks = casks.length;
 
     return (
-        <PageLayout backTo="/organisation" backLabel={organisationName ?? "Back"} backState={{ id: organisationId, name: organisationName }}>
+        <PageLayout backTo="/organisation" backLabel={organisationName ?? "Back"} backState={buildOrgState()}>
             <div className="breadcrumb">
                 <button className="breadcrumb-link" onClick={() => navigate("/organisations")}>Organisations</button>
                 <span className="breadcrumb-sep">/</span>
-                <button className="breadcrumb-link" onClick={() => navigate("/organisation", { state: { id: organisationId, name: organisationName } })}>{organisationName}</button>
+                <button className="breadcrumb-link" onClick={() => navigate("/organisation", { state: buildOrgState() })}>{organisationName}</button>
                 <span className="breadcrumb-sep">/</span>
                 <span className="breadcrumb-current">{cellarName}</span>
             </div>

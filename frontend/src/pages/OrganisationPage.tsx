@@ -4,18 +4,25 @@ import { useEffect, useState } from "react";
 import { getAllCellars, newCellar as createCellar } from "../api/cellar.ts";
 import { useHandleUnauthorised } from "../Utils.tsx";
 import { getUserAccessLevel, inviteToOrganisation, getMembers } from "../api/organisation.ts";
-import { getProfileImage } from "../api/user.ts";
+import { getProfileImages } from "../api/user.ts";
 import PageLayout from "../components/PageLayout";
 
 export default function OrganisationPage() {
     const location = useLocation();
-    const state = location.state as EntityLabel;
+    const state = location.state as {
+        id: string;
+        name: string;
+        cachedCellars?: EntityLabel[];
+        cachedAccessLevel?: string;
+        cachedMembers?: { admins: Record<string, string>; members: Record<string, string> };
+        cachedMemberImages?: Record<string, string | null>;
+    };
     const organisationName = state?.name;
     const organisationId = state?.id;
     const handleUnauthorised = useHandleUnauthorised();
 
-    const [cellars, setCellars] = useState<EntityLabel[]>([]);
-    const [accessLevel, setAccessLevel] = useState<string | null>(null);
+    const [cellars, setCellars] = useState<EntityLabel[]>(state?.cachedCellars ?? []);
+    const [accessLevel, setAccessLevel] = useState<string | null>(state?.cachedAccessLevel ?? null);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [inviteIdentifier, setInviteIdentifier] = useState("");
     const [isInviting, setIsInviting] = useState(false);
@@ -24,30 +31,62 @@ export default function OrganisationPage() {
     const [newCellarName, setNewCellarName] = useState("");
     const [isCreatingCellar, setIsCreatingCellar] = useState(false);
     const [isMembersOpen, setIsMembersOpen] = useState(false);
-    const [membersData, setMembersData] = useState<{ admins: Record<string, string>; members: Record<string, string> } | null>(null);
-    const [membersLoading, setMembersLoading] = useState(false);
-    const [memberImages, setMemberImages] = useState<Record<string, string | null>>({});
+    const [membersData, setMembersData] = useState<{ admins: Record<string, string>; members: Record<string, string> } | null>(state?.cachedMembers ?? null);
+    const [memberImages, setMemberImages] = useState<Record<string, string | null>>(state?.cachedMemberImages ?? {});
+    const [pageLoading, setPageLoading] = useState(!state?.cachedCellars);
     const navigate = useNavigate();
 
     const load = async () => {
         try {
-            const data = await getAllCellars(organisationId);
-            const rawList = Array.isArray(data) ? data : data?.cellars ?? [];
-            setCellars([...rawList].sort((a, b) => a.name.localeCompare(b.name)));
+            // Fetch cellars, access level, members, and images all together
+            const [cellarsRes, accessRes, membersRes] = await Promise.all([
+                getAllCellars(organisationId),
+                getUserAccessLevel(organisationId),
+                organisationId ? getMembers(organisationId) : Promise.resolve(null),
+            ]);
 
-            const accessData = await getUserAccessLevel(organisationId);
-            setAccessLevel(accessData.accessLevel);
+            const rawList: EntityLabel[] = Array.isArray(cellarsRes) ? cellarsRes : cellarsRes?.cellars ?? [];
+            const sorted = [...rawList].sort((a, b) => a.name.localeCompare(b.name));
+            setCellars(sorted);
+            setAccessLevel(accessRes.accessLevel);
+
+            if (membersRes) {
+                setMembersData(membersRes);
+
+                const allUserIds = [
+                    ...Object.keys(membersRes.admins ?? {}),
+                    ...Object.keys(membersRes.members ?? {}),
+                ];
+                if (allUserIds.length > 0) {
+                    const images = await getProfileImages(allUserIds);
+                    setMemberImages(images);
+                }
+            }
         } catch (err: any) {
             handleUnauthorised(err);
+        } finally {
+            setPageLoading(false);
         }
     };
 
     useEffect(() => {
-        load();
+        if (!state?.cachedCellars) {
+            load();
+        }
     }, []);
 
     const goToCellar = (cellar: EntityLabel) => {
-        navigate("/cellar", { state: { organisationId: organisationId, organisationName: organisationName, cellar: cellar } });
+        navigate("/cellar", {
+            state: {
+                organisationId,
+                organisationName,
+                cellar,
+                cachedMembers: membersData,
+                cachedMemberImages: memberImages,
+                cachedCellars: cellars,
+                cachedAccessLevel: accessLevel,
+            }
+        });
     };
 
     const newCellar = () => {
@@ -83,30 +122,8 @@ export default function OrganisationPage() {
         setIsInviteOpen(true);
     };
 
-    const openMembersModal = async () => {
-        if (!organisationId) return;
+    const openMembersModal = () => {
         setIsMembersOpen(true);
-        setMembersLoading(true);
-        try {
-            const data = await getMembers(organisationId);
-            setMembersData(data);
-
-            const allUserIds = [
-                ...Object.keys(data.admins ?? {}),
-                ...Object.keys(data.members ?? {}),
-            ];
-            const imageMap: Record<string, string | null> = {};
-            await Promise.all(
-                allUserIds.map(async (userId) => {
-                    imageMap[userId] = await getProfileImage(userId);
-                })
-            );
-            setMemberImages(imageMap);
-        } catch (err: any) {
-            handleUnauthorised(err);
-        } finally {
-            setMembersLoading(false);
-        }
     };
 
     const closeInviteModal = () => {
@@ -133,6 +150,16 @@ export default function OrganisationPage() {
             setIsInviting(false);
         }
     };
+
+    if (pageLoading) {
+        return (
+            <PageLayout backTo="/organisations" backLabel="Organisations">
+                <div className="empty-state">
+                    <p className="empty-state-text">Loading…</p>
+                </div>
+            </PageLayout>
+        );
+    }
 
     return (
         <PageLayout backTo="/organisations" backLabel="Organisations">
@@ -243,9 +270,9 @@ export default function OrganisationPage() {
                                 <button className="toast-dismiss" onClick={() => setInviteSuccess(null)}>✕</button>
                             </div>
                         )}
-                        {membersLoading ? (
+                        {!membersData ? (
                             <p className="text-muted">Loading…</p>
-                        ) : membersData ? (
+                        ) : (
                             <div className="members-list">
                                 {Object.entries(membersData.admins).map(([id, username]) => (
                                     <div key={id} className="member-row member-row-clickable" onClick={() => navigate("/member", { state: { userId: id } })}>
@@ -273,8 +300,6 @@ export default function OrganisationPage() {
                                     </div>
                                 ))}
                             </div>
-                        ) : (
-                            <p className="text-muted">Could not load members.</p>
                         )}
                         <div className="modal-actions">
                             <button className="btn btn-secondary" onClick={() => setIsMembersOpen(false)}>

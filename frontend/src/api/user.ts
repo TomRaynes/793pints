@@ -33,3 +33,12 @@ export const getProfileImage = async (id: string): Promise<string | null> => {
     }
 };
 
+export const getProfileImages = async (userIds: string[]): Promise<Record<string, string>> => {
+    try {
+        const res = await api.post("/user/profile_images", userIds);
+        return res.data || {};
+    } catch {
+        return {};
+    }
+};
+
