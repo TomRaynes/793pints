@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { EntityLabel } from "../types/models.ts";
+import type { UserProfile } from "../types/models.ts";
 import { useEffect, useState } from "react";
 import { getAllCellars, newCellar as createCellar } from "../api/cellar.ts";
 import { useHandleUnauthorised } from "../Utils.tsx";
 import { getUserAccessLevel, inviteToOrganisation, getMembers } from "../api/organisation.ts";
-import { getProfileImages } from "../api/user.ts";
+import { getProfileImages, getUserProfile } from "../api/user.ts";
 import PageLayout from "../components/PageLayout";
 
 export default function OrganisationPage() {
@@ -33,6 +34,10 @@ export default function OrganisationPage() {
     const [isMembersOpen, setIsMembersOpen] = useState(false);
     const [membersData, setMembersData] = useState<{ admins: Record<string, string>; members: Record<string, string> } | null>(state?.cachedMembers ?? null);
     const [memberImages, setMemberImages] = useState<Record<string, string | null>>(state?.cachedMemberImages ?? {});
+    const [viewProfileUserId, setViewProfileUserId] = useState<string | null>(null);
+    const [viewProfile, setViewProfile] = useState<UserProfile | null>(null);
+    const [viewProfileLoading, setViewProfileLoading] = useState(false);
+    const [viewProfileFullPicture, setViewProfileFullPicture] = useState(false);
     const [pageLoading, setPageLoading] = useState(!state?.cachedCellars);
     const navigate = useNavigate();
 
@@ -124,6 +129,27 @@ export default function OrganisationPage() {
 
     const openMembersModal = () => {
         setIsMembersOpen(true);
+    };
+
+    const openMemberProfile = async (userId: string) => {
+        setViewProfileUserId(userId);
+        setViewProfile(null);
+        setViewProfileLoading(true);
+        setViewProfileFullPicture(false);
+        try {
+            const data = await getUserProfile(userId);
+            setViewProfile(data);
+        } catch (err: any) {
+            handleUnauthorised(err);
+        } finally {
+            setViewProfileLoading(false);
+        }
+    };
+
+    const closeMemberProfile = () => {
+        setViewProfileUserId(null);
+        setViewProfile(null);
+        setViewProfileFullPicture(false);
     };
 
     const closeInviteModal = () => {
@@ -275,7 +301,7 @@ export default function OrganisationPage() {
                         ) : (
                             <div className="members-list">
                                 {Object.entries(membersData.admins).map(([id, username]) => (
-                                    <div key={id} className="member-row member-row-clickable" onClick={() => navigate("/member", { state: { userId: id } })}>
+                                    <div key={id} className="member-row member-row-clickable" onClick={() => openMemberProfile(id)}>
                                         <div className="member-avatar">
                                             {memberImages[id] ? (
                                                 <img src={memberImages[id]!} alt={username} className="member-avatar-img" />
@@ -288,7 +314,7 @@ export default function OrganisationPage() {
                                     </div>
                                 ))}
                                 {Object.entries(membersData.members).map(([id, username]) => (
-                                    <div key={id} className="member-row member-row-clickable" onClick={() => navigate("/member", { state: { userId: id } })}>
+                                    <div key={id} className="member-row member-row-clickable" onClick={() => openMemberProfile(id)}>
                                         <div className="member-avatar">
                                             {memberImages[id] ? (
                                                 <img src={memberImages[id]!} alt={username} className="member-avatar-img" />
@@ -307,6 +333,78 @@ export default function OrganisationPage() {
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+            {viewProfileUserId && (
+                <div className="modal-overlay modal-overlay-top" onClick={closeMemberProfile}>
+                    <div className="modal modal-profile" onClick={(e) => e.stopPropagation()}>
+                        {viewProfileLoading ? (
+                            <p className="text-muted">Loading…</p>
+                        ) : viewProfile ? (
+                            <>
+                                <h3 className="modal-title">{viewProfile.name || viewProfile.username || "Profile"}</h3>
+
+                                <div className="profile-avatar-section">
+                                    <div
+                                        className={`profile-avatar profile-avatar-static${viewProfile.profilePicture ? " profile-avatar-clickable" : ""}`}
+                                        onClick={() => viewProfile.profilePicture && setViewProfileFullPicture(true)}
+                                    >
+                                        {viewProfile.profilePicture ? (
+                                            <img src={viewProfile.profilePicture} alt="Profile" className="profile-avatar-img" />
+                                        ) : (
+                                            <span className="profile-avatar-placeholder">
+                                                {(viewProfile.name ?? viewProfile.username ?? "?").charAt(0).toUpperCase()}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="profile-avatar-info">
+                                        <span className="profile-avatar-username">{viewProfile.username}</span>
+                                        <span className="profile-avatar-email">{viewProfile.email}</span>
+                                    </div>
+                                </div>
+
+                                <div className="profile-form">
+                                    <div className="profile-readonly-field">
+                                        <span className="profile-readonly-label">Display Name</span>
+                                        <span className="profile-readonly-value">
+                                            {viewProfile.name || <span className="text-muted">Not set</span>}
+                                        </span>
+                                    </div>
+                                    <div className="profile-readonly-field">
+                                        <span className="profile-readonly-label">Bio</span>
+                                        <span className="profile-readonly-value profile-readonly-bio">
+                                            {viewProfile.bio || <span className="text-muted">Not set</span>}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="modal-actions">
+                                    <button className="btn btn-secondary" onClick={closeMemberProfile}>
+                                        Close
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-muted">Could not load profile.</p>
+                                <div className="modal-actions">
+                                    <button className="btn btn-secondary" onClick={closeMemberProfile}>
+                                        Close
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+            {viewProfileFullPicture && viewProfile?.profilePicture && (
+                <div className="lightbox-overlay" onClick={() => setViewProfileFullPicture(false)}>
+                    <img
+                        src={viewProfile.profilePicture}
+                        alt="Profile"
+                        className="lightbox-img"
+                        onClick={(e) => e.stopPropagation()}
+                    />
                 </div>
             )}
         </PageLayout>

@@ -1242,6 +1242,14 @@ body {
 }
 
 /* ── Lightbox ── */
+.modal-overlay-top {
+  z-index: 1050;
+}
+
+.modal-profile {
+  width: min(92vw, 460px);
+}
+
 .lightbox-overlay {
   position: fixed;
   inset: 0;
