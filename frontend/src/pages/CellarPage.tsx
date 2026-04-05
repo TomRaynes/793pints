@@ -240,7 +240,10 @@ export default function CellarPage() {
                 <span className="breadcrumb-current">{cellarName}</span>
             </div>
 
-            <h1 className="page-title page-title-clickable" onClick={openSettings} title="Cellar settings">{cellarName}</h1>
+            <div className="page-title-row">
+                <h1 className="page-title">{cellarName}</h1>
+                <button className="btn-settings-icon" onClick={openSettings} title="Cellar settings">⚙</button>
+            </div>
             <p className="page-subtitle">{totalCasks} cask{totalCasks !== 1 ? "s" : ""} in this cellar</p>
 
             {casks.length === 0 ? (
@@ -351,7 +354,7 @@ export default function CellarPage() {
                                         <span className="profile-save-success">✓ Saved</span>
                                     )}
                                     <button className="btn btn-secondary" onClick={closeSettings} disabled={isSavingSettings}>
-                                        Cancel
+                                        Close
                                     </button>
                                     <button className="btn btn-primary" onClick={saveSettings} disabled={isSavingSettings}>
                                         {isSavingSettings ? "Saving…" : "Save"}
