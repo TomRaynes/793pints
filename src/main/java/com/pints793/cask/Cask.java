@@ -3,6 +3,7 @@ package com.pints793.cask;
 import com.pints793.DefaultConfig;
 import com.pints793.IdType;
 import com.pints793.Utils;
+import com.pints793.cellar.CellarConfig;
 import org.springframework.data.annotation.Id;
 
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -13,7 +14,7 @@ import java.time.OffsetDateTime;
 import static java.time.OffsetDateTime.now;
 
 @Document(collection = "Cask")
-public class Cask implements DefaultConfig {
+public class Cask {
 
     @Id
     private String id;
@@ -31,16 +32,16 @@ public class Cask implements DefaultConfig {
 
     public Cask() {}
 
-    public Cask(String name, String cellarId, CaskState state) {
+    public Cask(String name, String cellarId, CaskState state, CellarConfig config) {
         this.id = Utils.newId(IdType.CASK);
         this.name = name;
         this.cellarId = cellarId;
         this.state = state != null ? state : CaskState.DELIVERED;
         this.stateChangeTimestamp = now().toString();
-        this.rackCooldownHours = RACK_COOLDOWN_HOURS_DEFAULT;
-        this.ventCooldownHours = VENT_COOLDOWN_HOURS_DEFAULT;
-        this.tapCooldownHours = TAP_COOLDOWN_HOURS_DEFAULT;
-        this.pullingPeriodHours = PULLING_PERIOD_HOURS_DEFAULT;
+        this.rackCooldownHours = config.getRackCooldownDefault();
+        this.ventCooldownHours = config.getVentCooldownDefault();
+        this.tapCooldownHours = config.getTapCooldownDefault();
+        this.pullingPeriodHours = config.getPullingPeriodDefault();
     }
 
     public String getId() {

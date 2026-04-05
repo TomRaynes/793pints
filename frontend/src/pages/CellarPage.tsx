@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAllCasks, createCask } from "../api/cask";
+import { getCellarConfig, updateCellarConfig } from "../api/cellar";
+import type { UpdateCellarConfigRequest } from "../api/cellar";
 import type { Cask, CaskState, EntityLabel } from "../types/models";
 import StatusGroup from "../components/StatusGroup";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -92,6 +94,18 @@ export default function CellarPage() {
     const [isNewCaskOpen, setIsNewCaskOpen] = useState(false);
     const [newCaskName, setNewCaskName] = useState("");
     const [isCreating, setIsCreating] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [settingsLoading, setSettingsLoading] = useState(false);
+    const [isSavingSettings, setIsSavingSettings] = useState(false);
+    const [settingsSaved, setSettingsSaved] = useState(false);
+    const [editRackDefault, setEditRackDefault] = useState("");
+    const [editVentDefault, setEditVentDefault] = useState("");
+    const [editTapDefault, setEditTapDefault] = useState("");
+    const [editPullDefault, setEditPullDefault] = useState("");
+    const [applyRackAll, setApplyRackAll] = useState(false);
+    const [applyVentAll, setApplyVentAll] = useState(false);
+    const [applyTapAll, setApplyTapAll] = useState(false);
+    const [applyPullAll, setApplyPullAll] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state as CellarLocationState;
@@ -166,6 +180,54 @@ export default function CellarPage() {
         setCasks((prev) => prev.filter((cask) => cask.caskId !== caskId));
     };
 
+    const openSettings = async () => {
+        if (!cellarId) return;
+        setIsSettingsOpen(true);
+        setSettingsLoading(true);
+        setSettingsSaved(false);
+        setApplyRackAll(false);
+        setApplyVentAll(false);
+        setApplyTapAll(false);
+        setApplyPullAll(false);
+        try {
+            const config = await getCellarConfig(cellarId);
+            setEditRackDefault(String(config.rackCooldownDefault ?? 0));
+            setEditVentDefault(String(config.ventCooldownDefault ?? 0));
+            setEditTapDefault(String(config.tapCooldownDefault ?? 0));
+            setEditPullDefault(String(config.pullingPeriodDefault ?? 0));
+        } catch (err: any) {
+            handleUnauthorised(err);
+        } finally {
+            setSettingsLoading(false);
+        }
+    };
+
+    const closeSettings = () => {
+        if (isSavingSettings) return;
+        setIsSettingsOpen(false);
+    };
+
+    const saveSettings = async () => {
+        if (!cellarId || isSavingSettings) return;
+        try {
+            setIsSavingSettings(true);
+            setSettingsSaved(false);
+            const request: UpdateCellarConfigRequest = {
+                rackCooldownDefault: { value: Number(editRackDefault) || 0, applyToAll: applyRackAll },
+                ventCooldownDefault: { value: Number(editVentDefault) || 0, applyToAll: applyVentAll },
+                tapCooldownDefault: { value: Number(editTapDefault) || 0, applyToAll: applyTapAll },
+                pullingPeriodDefault: { value: Number(editPullDefault) || 0, applyToAll: applyPullAll },
+            };
+            await updateCellarConfig(cellarId, request);
+            setSettingsSaved(true);
+            setTimeout(() => setSettingsSaved(false), 2000);
+        } catch (err: any) {
+            handleUnauthorised(err);
+        } finally {
+            setIsSavingSettings(false);
+        }
+    };
+
     const totalCasks = casks.length;
 
     return (
@@ -178,7 +240,7 @@ export default function CellarPage() {
                 <span className="breadcrumb-current">{cellarName}</span>
             </div>
 
-            <h1 className="page-title">{cellarName}</h1>
+            <h1 className="page-title page-title-clickable" onClick={openSettings} title="Cellar settings">{cellarName}</h1>
             <p className="page-subtitle">{totalCasks} cask{totalCasks !== 1 ? "s" : ""} in this cellar</p>
 
             {casks.length === 0 ? (
@@ -229,6 +291,74 @@ export default function CellarPage() {
                                 {isCreating ? "Creating…" : "Create"}
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+            {isSettingsOpen && (
+                <div className="modal-overlay" onClick={closeSettings}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="modal-title">Cellar Settings</h3>
+                        {settingsLoading ? (
+                            <p className="text-muted">Loading…</p>
+                        ) : (
+                            <>
+                                <div className="config-field">
+                                    <label className="modal-field">
+                                        <span>Racking Cooldown Default (hours)</span>
+                                        <input type="number" min="0" step="1" value={editRackDefault} onChange={(e) => setEditRackDefault(e.target.value)} disabled={isSavingSettings} />
+                                    </label>
+                                    <label className="config-checkbox">
+                                        <input type="checkbox" checked={applyRackAll} onChange={(e) => setApplyRackAll(e.target.checked)} disabled={isSavingSettings} />
+                                        <span>Apply to all cellars in {organisationName}</span>
+                                    </label>
+                                </div>
+
+                                <div className="config-field">
+                                    <label className="modal-field">
+                                        <span>Venting Cooldown Default (hours)</span>
+                                        <input type="number" min="0" step="1" value={editVentDefault} onChange={(e) => setEditVentDefault(e.target.value)} disabled={isSavingSettings} />
+                                    </label>
+                                    <label className="config-checkbox">
+                                        <input type="checkbox" checked={applyVentAll} onChange={(e) => setApplyVentAll(e.target.checked)} disabled={isSavingSettings} />
+                                        <span>Apply to all cellars in {organisationName}</span>
+                                    </label>
+                                </div>
+
+                                <div className="config-field">
+                                    <label className="modal-field">
+                                        <span>Tapping Cooldown Default (hours)</span>
+                                        <input type="number" min="0" step="1" value={editTapDefault} onChange={(e) => setEditTapDefault(e.target.value)} disabled={isSavingSettings} />
+                                    </label>
+                                    <label className="config-checkbox">
+                                        <input type="checkbox" checked={applyTapAll} onChange={(e) => setApplyTapAll(e.target.checked)} disabled={isSavingSettings} />
+                                        <span>Apply to all cellars in {organisationName}</span>
+                                    </label>
+                                </div>
+
+                                <div className="config-field">
+                                    <label className="modal-field">
+                                        <span>Pulling Period Default (hours)</span>
+                                        <input type="number" min="0" step="1" value={editPullDefault} onChange={(e) => setEditPullDefault(e.target.value)} disabled={isSavingSettings} />
+                                    </label>
+                                    <label className="config-checkbox">
+                                        <input type="checkbox" checked={applyPullAll} onChange={(e) => setApplyPullAll(e.target.checked)} disabled={isSavingSettings} />
+                                        <span>Apply to all cellars in {organisationName}</span>
+                                    </label>
+                                </div>
+
+                                <div className="modal-actions">
+                                    {settingsSaved && (
+                                        <span className="profile-save-success">✓ Saved</span>
+                                    )}
+                                    <button className="btn btn-secondary" onClick={closeSettings} disabled={isSavingSettings}>
+                                        Cancel
+                                    </button>
+                                    <button className="btn btn-primary" onClick={saveSettings} disabled={isSavingSettings}>
+                                        {isSavingSettings ? "Saving…" : "Save"}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
             )}

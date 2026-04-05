@@ -2,6 +2,7 @@ package com.pints793;
 
 import com.pints793.cask.Cask;
 import com.pints793.cellar.Cellar;
+import com.pints793.cellar.CellarConfig;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Component;
 import java.time.OffsetDateTime;
 
 @Component
-public class ApplicationManager extends ApplicationSupport {
+public class ApplicationManager extends ApplicationSupport implements DefaultConfig {
 
     public void run() {
+        System.out.println("BACKEND STARTED SUCCESSFULLY");
+
         while (Thread.currentThread().isAlive()) {
             updateCaskStates();
 

@@ -15,3 +15,33 @@ export const newCellar = async (
     });
     return res.data;
 };
+
+export interface CellarConfig {
+    rackCooldownDefault: number;
+    ventCooldownDefault: number;
+    tapCooldownDefault: number;
+    pullingPeriodDefault: number;
+}
+
+export interface ConfigField {
+    value: number;
+    applyToAll: boolean;
+}
+
+export interface UpdateCellarConfigRequest {
+    rackCooldownDefault: ConfigField;
+    ventCooldownDefault: ConfigField;
+    tapCooldownDefault: ConfigField;
+    pullingPeriodDefault: ConfigField;
+}
+
+export const getCellarConfig = async (cellarId: string): Promise<CellarConfig> => {
+    const res = await api.get(`/cellar/${cellarId}/config`);
+    return res.data;
+};
+
+export const updateCellarConfig = async (cellarId: string, request: UpdateCellarConfigRequest) => {
+    const res = await api.post(`/cellar/${cellarId}/update_config`, request);
+    return res.data;
+};
+

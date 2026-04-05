@@ -36,7 +36,8 @@ public class CaskController extends ApplicationSupport {
             Cask cask = new Cask(
                     request.getCaskName(),
                     request.getCellarId(),
-                    CaskState.parse(request.getState()));
+                    CaskState.parse(request.getState()),
+                    cellar.getConfig());
 
             cellar.addCask(cask.getId());
 
