@@ -37,7 +37,7 @@ export default function LoginPage() {
                 <div className="login-brand">
                     793 <span className="login-brand-accent">Pints</span>
                 </div>
-                <p className="login-tagline">Cask management, simplified.</p>
+                <p className="login-tagline">Cellar management, simplified.</p>
 
                 <div className="login-form" onKeyDown={handleKeyDown}>
                     <div className="form-group">

@@ -230,7 +230,6 @@ export default function CaskCard({ cask, organisationId, cellarId, onUpdate, onR
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
                                 placeholder="Enter cask name"
-                                autoFocus
                                 disabled={isSaving}
                             />
                         </label>
