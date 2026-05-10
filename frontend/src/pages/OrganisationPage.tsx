@@ -38,7 +38,11 @@ export default function OrganisationPage() {
     const [viewProfile, setViewProfile] = useState<UserProfile | null>(null);
     const [viewProfileLoading, setViewProfileLoading] = useState(false);
     const [viewProfileFullPicture, setViewProfileFullPicture] = useState(false);
-    const [pageLoading, setPageLoading] = useState(!state?.cachedCellars);
+    // Treat the cache as "real" only when an access level is present. CellarPage may
+    // forward an empty cellars array / empty image map when the user landed on it via a
+    // pinned-cellar shortcut from the dashboard, in which case we still need to load.
+    const hasCachedData = Boolean(state?.cachedAccessLevel);
+    const [pageLoading, setPageLoading] = useState(!hasCachedData);
     const navigate = useNavigate();
 
     const load = async () => {
@@ -75,7 +79,7 @@ export default function OrganisationPage() {
     };
 
     useEffect(() => {
-        if (!state?.cachedCellars) {
+        if (!hasCachedData) {
             load();
         }
     }, []);
