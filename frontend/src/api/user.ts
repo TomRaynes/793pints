@@ -42,3 +42,24 @@ export const getProfileImages = async (userIds: string[]): Promise<Record<string
     }
 };
 
+export interface PinnedCellarInfo {
+    cellarId: string;
+    cellarName: string;
+    organisationId: string;
+    organisationName: string;
+}
+
+export const getPinnedCellars = async (): Promise<PinnedCellarInfo[]> => {
+    const res = await api.get("/user/pinned_cellars");
+    return res.data ?? [];
+};
+
+export const pinCellar = async (cellarId: string) => {
+    const res = await api.post(`/user/cellar/${cellarId}/pin`);
+    return res.data;
+};
+
+export const unpinCellar = async (cellarId: string) => {
+    const res = await api.post(`/user/cellar/${cellarId}/unpin`);
+    return res.data;
+};

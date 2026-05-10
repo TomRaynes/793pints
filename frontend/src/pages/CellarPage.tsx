@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { getAllCasks, createCask } from "../api/cask";
 import { getCellarConfig, updateCellarConfig } from "../api/cellar";
+import { getPinnedCellars, pinCellar as apiPinCellar, unpinCellar as apiUnpinCellar } from "../api/user";
 import type { UpdateCellarConfigRequest } from "../api/cellar";
 import type { Cask, CaskState, EntityLabel } from "../types/models";
 import StatusGroup from "../components/StatusGroup";
@@ -110,6 +111,8 @@ export default function CellarPage() {
     const [applyVentAll, setApplyVentAll] = useState(false);
     const [applyTapAll, setApplyTapAll] = useState(false);
     const [applyPullAll, setApplyPullAll] = useState(false);
+    const [isPinned, setIsPinned] = useState(false);
+    const [isTogglingPin, setIsTogglingPin] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state as CellarLocationState;
@@ -147,6 +150,36 @@ export default function CellarPage() {
     useEffect(() => {
         load();
     }, []);
+
+    useEffect(() => {
+        if (!cellarId) return;
+        (async () => {
+            try {
+                const pinned = await getPinnedCellars();
+                setIsPinned(pinned.some((p) => p.cellarId === cellarId));
+            } catch (err: any) {
+                handleUnauthorised(err);
+            }
+        })();
+    }, [cellarId]);
+
+    const togglePin = async () => {
+        if (!cellarId || isTogglingPin) return;
+        try {
+            setIsTogglingPin(true);
+            if (isPinned) {
+                await apiUnpinCellar(cellarId);
+                setIsPinned(false);
+            } else {
+                await apiPinCellar(cellarId);
+                setIsPinned(true);
+            }
+        } catch (err: any) {
+            handleUnauthorised(err);
+        } finally {
+            setIsTogglingPin(false);
+        }
+    };
 
     useEffect(() => {
         const id = setInterval(() => {
@@ -259,6 +292,14 @@ export default function CellarPage() {
 
             <div className="page-title-row">
                 <h1 className="page-title">{cellarName}</h1>
+                <button
+                    className={`btn-settings-icon${isPinned ? " btn-pinned" : ""}`}
+                    onClick={togglePin}
+                    disabled={isTogglingPin}
+                    title={isPinned ? "Unpin from dashboard" : "Pin to dashboard"}
+                >
+                    {isPinned ? "📌" : "📍"}
+                </button>
                 <button className="btn-settings-icon" onClick={openSettings} title="Cellar settings">⚙</button>
             </div>
             <p className="page-subtitle">{totalCasks} cask{totalCasks !== 1 ? "s" : ""} in this cellar</p>

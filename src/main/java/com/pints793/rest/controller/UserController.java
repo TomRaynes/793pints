@@ -10,6 +10,7 @@ import com.pints793.organisation.OrganisationMembersResponse;
 import com.pints793.user.LoginRequest;
 import com.pints793.user.LoginResponse;
 import com.pints793.user.NewUserRequest;
+import com.pints793.user.PinnedCellarInfo;
 import com.pints793.user.UpdateProfileRequest;
 import com.pints793.user.User;
 import com.pints793.user.UserException;
@@ -32,6 +33,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -354,6 +356,44 @@ public class UserController extends ApplicationSupport {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @GetMapping("/pinned_cellars")
+    public ResponseEntity<?> getPinnedCellars(@RequestHeader("Authorization") String token) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        List<String> pinnedIds = user.getPinnedCellarIds();
+        List<PinnedCellarInfo> result = new ArrayList<>();
+        List<String> staleIds = new ArrayList<>();
+
+        for (String cellarId : pinnedIds) {
+            Cellar cellar = getCellar(cellarId);
+            if (cellar == null) {
+                staleIds.add(cellarId);
+                continue;
+            }
+            Organisation organisation = getOrganisation(cellar.getOrganisationId());
+            if (organisation == null || !organisation.getMemberUserIds().contains(user.getId())) {
+                staleIds.add(cellarId);
+                continue;
+            }
+            result.add(new PinnedCellarInfo()
+                    .setCellarId(cellar.getId())
+                    .setCellarName(cellar.getName())
+                    .setOrganisationId(organisation.getId())
+                    .setOrganisationName(organisation.getName()));
+        }
+
+        if (!staleIds.isEmpty()) {
+            pinnedIds.removeAll(staleIds);
+            userCollection.save(user);
+        }
+
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/cellar/{cellarId}/pin")

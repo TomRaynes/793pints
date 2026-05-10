@@ -3,6 +3,7 @@ package com.pints793.user;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,6 +27,7 @@ public class User {
 
     public User() {
         organisationIds = new HashSet<>();
+        pinnedCellarIds = new ArrayList<>();
     }
 
     public String getId() {
@@ -121,6 +123,9 @@ public class User {
     }
 
     public List<String> getPinnedCellarIds() {
+        if (pinnedCellarIds == null) {
+            pinnedCellarIds = new ArrayList<>();
+        }
         return pinnedCellarIds;
     }
 
@@ -130,6 +135,9 @@ public class User {
     }
 
     public User pinCellar(String cellarId) {
+        if (pinnedCellarIds == null) {
+            pinnedCellarIds = new ArrayList<>();
+        }
         if (!pinnedCellarIds.contains(cellarId)) {
             pinnedCellarIds.add(cellarId);
         }
@@ -137,7 +145,7 @@ public class User {
     }
 
     public User unpinCellar(String cellarId) throws UserException.CellarNotPinned {
-        if (!pinnedCellarIds.contains(cellarId)) {
+        if (pinnedCellarIds == null || !pinnedCellarIds.contains(cellarId)) {
             throw new UserException.CellarNotPinned();
         }
         pinnedCellarIds.remove(cellarId);

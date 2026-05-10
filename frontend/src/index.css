@@ -769,6 +769,91 @@ body {
   gap: var(--space-md);
 }
 
+.pinned-section {
+  margin-bottom: var(--space-lg);
+}
+
+.pinned-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 var(--space-sm);
+  color: var(--color-text);
+}
+
+.pinned-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.pinned-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+  color: var(--color-text);
+  text-align: left;
+  width: 100%;
+}
+
+.pinned-card:hover {
+  border-color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.pinned-card-icon {
+  font-size: 1.4rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-light);
+  border-radius: var(--radius-md);
+  flex-shrink: 0;
+}
+
+.pinned-card-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.pinned-card-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinned-card-org {
+  font-size: 0.8rem;
+  color: var(--color-text-muted, #888);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pinned-card-chevron {
+  font-size: 1.2rem;
+  color: var(--color-text-muted, #888);
+  flex-shrink: 0;
+}
+
+.btn-pinned {
+  background: var(--color-accent-light);
+  border-color: var(--color-accent);
+}
+
 .dashboard-card {
   display: flex;
   flex-direction: column;
