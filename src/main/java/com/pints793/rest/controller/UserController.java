@@ -3,12 +3,16 @@ package com.pints793.rest.controller;
 import com.pints793.ApplicationSupport;
 import com.pints793.IdType;
 import com.pints793.Utils;
+import com.pints793.cellar.Cellar;
 import com.pints793.organisation.Invitation;
+import com.pints793.organisation.Organisation;
+import com.pints793.organisation.OrganisationMembersResponse;
 import com.pints793.user.LoginRequest;
 import com.pints793.user.LoginResponse;
 import com.pints793.user.NewUserRequest;
 import com.pints793.user.UpdateProfileRequest;
 import com.pints793.user.User;
+import com.pints793.user.UserException;
 import com.pints793.user.UserProfileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +36,10 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 
 @RestController
@@ -346,5 +354,53 @@ public class UserController extends ApplicationSupport {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    @PostMapping("/cellar/{cellarId}/pin")
+    public ResponseEntity<?> pinCellar(@RequestHeader("Authorization") String token,
+                                        @PathVariable("cellarId") String cellarId) {
+        return executePinCellarOperation(token, cellarId, user -> {
+            user.pinCellar(cellarId);
+            return ResponseEntity.ok().build();
+        });
+    }
+
+    @PostMapping("/cellar/{cellarId}/unpin")
+    public ResponseEntity<?> unpinCellar(@RequestHeader("Authorization") String token,
+                                       @PathVariable("cellarId") String cellarId) {
+        return executePinCellarOperation(token, cellarId, user -> {
+            try {
+                user.unpinCellar(cellarId);
+        } catch (UserException.CellarNotPinned e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+        return ResponseEntity.ok().build();
+        });
+    }
+
+    private ResponseEntity<?> executePinCellarOperation(String token,
+                                                        String cellarId,
+                                                        Function<User, ResponseEntity<?>> operation) {
+        User user = getUser(token);
+
+        if (user == null) {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+        Cellar cellar = getCellar(cellarId);
+
+        if (cellar == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        Organisation organisation = getOrganisation(cellar.getOrganisationId());
+
+        if (organisation == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        if (!organisation.getMemberUserIds().contains(user.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        ResponseEntity<?> response = operation.apply(user);
+        userCollection.save(user);
+        return response;
     }
 }
