@@ -126,22 +126,29 @@ public class CaskController extends ApplicationSupport {
                 }
             }
             if (rackCooldownHours != null) {
-                cask.setRackCooldownHours(Long.parseLong(rackCooldownHours));
+                cask.setRackCooldownHours(formatAsLong(rackCooldownHours));
             }
             if (ventCooldownHours != null) {
-                cask.setVentCooldownHours(Long.parseLong(ventCooldownHours));
+                cask.setVentCooldownHours(formatAsLong(ventCooldownHours));
             }
             if (tapCooldownHours != null) {
-                cask.setTapCooldownHours(Long.parseLong(tapCooldownHours));
+                cask.setTapCooldownHours(formatAsLong(tapCooldownHours));
             }
             if (pullingPeriodHours != null) {
-                cask.setPullingPeriodHours(Long.parseLong(pullingPeriodHours));
+                cask.setPullingPeriodHours(formatAsLong(pullingPeriodHours));
             }
             caskCollection.save(cask);
             return ResponseEntity.ok().body(cask);
         } catch (ErrorResponseException e) {
             return new ResponseEntity<>(e.getStatus());
         }
+    }
+
+    private static long formatAsLong(String cooldown) {
+        if (cooldown.contains(".")) {
+            cooldown = cooldown.substring(0, cooldown.indexOf('.'));
+        }
+        return Long.parseLong(cooldown);
     }
 
     @PostMapping("/get/all")

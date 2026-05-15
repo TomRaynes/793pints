@@ -46,6 +46,8 @@ targets:
       - name: "Build & embed Kotlin shared framework"
         # No input/output files + basedOnDependencyAnalysis:false → script always runs.
         # Gradle's own up-to-date check decides whether to actually relink.
+        # The backend URL comes from `mobile/gradle.properties → IOS_BASE_URL`
+        # (so ngrok URLs persist across Xcode builds without per-scheme tweaks).
         basedOnDependencyAnalysis: false
         script: |
           cd "$SRCROOT/.."

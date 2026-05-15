@@ -85,8 +85,14 @@ buildkonfig {
     packageName = "com.pints793.mobile.config"
     defaultConfigs {
         // Default = dev. iOS simulator and Android emulator each map to a host loopback.
-        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "ANDROID_BASE_URL", "http://10.0.2.2:8080/api/v1")
-        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "IOS_BASE_URL", "http://localhost:8080/api/v1")
+        // Override at build time:  ./gradlew … -PIOS_BASE_URL=https://abcd.ngrok-free.app/api/v1
+        // …or uncomment IOS_BASE_URL in mobile/gradle.properties (or ~/.gradle/gradle.properties).
+        val androidBaseUrl = (findProperty("ANDROID_BASE_URL") as String?) ?: "http://10.0.2.2:8080/api/v1"
+        val iosBaseUrl     = (findProperty("IOS_BASE_URL")     as String?) ?: "http://localhost:8080/api/v1"
+        logger.lifecycle("📡  ANDROID_BASE_URL = $androidBaseUrl")
+        logger.lifecycle("📡  IOS_BASE_URL     = $iosBaseUrl")
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "ANDROID_BASE_URL", androidBaseUrl)
+        buildConfigField(com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING, "IOS_BASE_URL",     iosBaseUrl)
     }
 }
 
