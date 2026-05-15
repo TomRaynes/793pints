@@ -31,8 +31,8 @@ enum class CaskState(val display: String) {
 
 @Serializable
 data class Cask(
-    val caskId: String,
-    val caskName: String,
+    @SerialName("id")   val caskId: String,
+    @SerialName("name") val caskName: String,
     val state: CaskState,
     val stateChangeTimestamp: String, // ISO-8601 from backend; parsed to Instant on demand
     val rackCooldownHours: Double? = null,

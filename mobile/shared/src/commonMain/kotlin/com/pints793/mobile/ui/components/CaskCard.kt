@@ -228,12 +228,12 @@ private fun EditCaskDialog(
                             organisationId = "",
                             cellarId = "",
                             caskId = cask.caskId,
-                            name = name.trim(),
+                            caskName = name.trim(),
                             state = state,
-                            rackCooldownHours = rack.toDoubleOrNull(),
-                            ventCooldownHours = vent.toDoubleOrNull(),
-                            tapCooldownHours = tap.toDoubleOrNull(),
-                            pullingPeriodHours = pull.toDoubleOrNull(),
+                            rackCooldownHours = rack.takeIf { it.isNotBlank() },
+                            ventCooldownHours = vent.takeIf { it.isNotBlank() },
+                            tapCooldownHours = tap.takeIf { it.isNotBlank() },
+                            pullingPeriodHours = pull.takeIf { it.isNotBlank() },
                         )
                     )
                 },

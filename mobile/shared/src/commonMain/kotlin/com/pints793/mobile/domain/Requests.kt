@@ -23,7 +23,7 @@ data class UpdateProfileRequest(
 )
 
 @Serializable
-data class NewCellarRequest(val name: String, val organisationId: String)
+data class NewCellarRequest(val cellarName: String, val organisationId: String)
 
 @Serializable
 data class NewOrganisationRequest(val name: String)
@@ -32,7 +32,7 @@ data class NewOrganisationRequest(val name: String)
 data class NewCaskRequest(
     val organisationId: String,
     val cellarId: String,
-    val name: String,
+    val caskName: String,
     val state: CaskState,
 )
 
@@ -41,12 +41,13 @@ data class UpdateCaskRequest(
     val organisationId: String,
     val cellarId: String,
     val caskId: String,
-    val name: String? = null,
+    val caskName: String? = null,
     val state: CaskState? = null,
-    val rackCooldownHours: Double? = null,
-    val ventCooldownHours: Double? = null,
-    val tapCooldownHours: Double? = null,
-    val pullingPeriodHours: Double? = null,
+    // Backend declares these as String (raw form-input). Empty string = leave unchanged.
+    val rackCooldownHours: String? = null,
+    val ventCooldownHours: String? = null,
+    val tapCooldownHours: String? = null,
+    val pullingPeriodHours: String? = null,
 )
 
 @Serializable
@@ -55,6 +56,15 @@ data class RemoveCaskRequest(
     val cellarId: String,
     val caskId: String,
 )
+
+@Serializable
+data class GetAllCellarsRequest(val organisationId: String)
+
+@Serializable
+data class GetAllCasksRequest(val organisationId: String, val cellarId: String)
+
+@Serializable
+data class GetAccessLevelRequest(val organisationId: String)
 
 @Serializable
 data class CellarConfigField(val value: Double, val applyToAll: Boolean = false)
@@ -68,7 +78,7 @@ data class UpdateCellarConfigRequest(
 )
 
 @Serializable
-data class InviteRequest(val identifier: String)
+data class InviteRequest(val organisationId: String, val recipientIdentifier: String)
 
 @Serializable
 data class AcceptInviteRequest(val invitationId: String)
