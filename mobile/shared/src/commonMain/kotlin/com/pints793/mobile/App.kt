@@ -24,8 +24,15 @@ import com.pints793.mobile.auth.AuthStatus
 import com.pints793.mobile.di.ServiceLocator
 import com.pints793.mobile.ui.components.PageLayout
 import com.pints793.mobile.ui.navigation.Route
+import com.pints793.mobile.ui.screens.cellar.CellarScreen
 import com.pints793.mobile.ui.screens.dashboard.DashboardScreen
+import com.pints793.mobile.ui.screens.editprofile.EditProfileScreen
+import com.pints793.mobile.ui.screens.invitations.InvitationsScreen
 import com.pints793.mobile.ui.screens.login.LoginScreen
+import com.pints793.mobile.ui.screens.memberprofile.MemberProfileScreen
+import com.pints793.mobile.ui.screens.organisation.OrganisationScreen
+import com.pints793.mobile.ui.screens.organisations.OrganisationsScreen
+import com.pints793.mobile.ui.screens.profile.ProfileScreen
 import com.pints793.mobile.ui.theme.PintsTheme
 
 @Composable
@@ -91,32 +98,67 @@ private fun NavRoot(startAtLogin: Boolean) {
             )
         }
 
-        // ── PLACEHOLDERS — port the corresponding React pages here. ─────────
-        composable<Route.Organisations> { Stub("Organisations", nav::popBackStack) }
+        // ── Real screens ───────────────────────────────────────────────
+        composable<Route.Organisations> {
+            OrganisationsScreen(
+                onBack = { nav.popBackStack() },
+                onOpenOrganisation = { org ->
+                    nav.navigate(Route.Organisation(orgId = org.id, orgName = org.name))
+                },
+            )
+        }
         composable<Route.Organisation> { entry ->
             val args = entry.toRoute<Route.Organisation>()
-            Stub("Organisation: ${args.orgName}", nav::popBackStack)
+            OrganisationScreen(
+                orgId = args.orgId,
+                orgName = args.orgName,
+                onBack = { nav.popBackStack() },
+                onOpenCellar = { cellar ->
+                    nav.navigate(
+                        Route.Cellar(
+                            orgId = args.orgId,
+                            orgName = args.orgName,
+                            cellarId = cellar.id,
+                            cellarName = cellar.name,
+                        )
+                    )
+                },
+                onOpenMember = { userId -> nav.navigate(Route.MemberProfile(userId)) },
+            )
         }
         composable<Route.Cellar> { entry ->
             val args = entry.toRoute<Route.Cellar>()
-            Stub("Cellar: ${args.cellarName}", nav::popBackStack)
+            CellarScreen(
+                orgId = args.orgId,
+                orgName = args.orgName,
+                cellarId = args.cellarId,
+                cellarName = args.cellarName,
+                onBack = { nav.popBackStack() },
+            )
         }
-        composable<Route.Profile>      { Stub("Profile",      nav::popBackStack) }
-        composable<Route.EditProfile>  { Stub("Edit Profile", nav::popBackStack) }
+        composable<Route.Profile> {
+            ProfileScreen(
+                onBack = { nav.popBackStack() },
+                onEdit = { nav.navigate(Route.EditProfile) },
+            )
+        }
+        composable<Route.EditProfile> {
+            EditProfileScreen(onBack = { nav.popBackStack() })
+        }
         composable<Route.MemberProfile> { entry ->
             val args = entry.toRoute<Route.MemberProfile>()
-            Stub("Member: ${args.userId}", nav::popBackStack)
+            MemberProfileScreen(userId = args.userId, onBack = { nav.popBackStack() })
         }
-        composable<Route.Invitations>  { Stub("Invitations",  nav::popBackStack) }
+        composable<Route.Invitations> {
+            InvitationsScreen(onBack = { nav.popBackStack() })
+        }
     }
 }
 
 @Composable
 private fun Stub(title: String, onBack: () -> Unit) {
     PageLayout(title = title, onBack = onBack) {
-        Text("This screen is not yet implemented. See README.md → ‘Continuation checklist’.")
-        Spacer(Modifier.height(8.dp))
-        Text("Add a ViewModel and a Composable in `ui/screens/${title.lowercase().replace(' ', '_')}/` following the LoginScreen / DashboardScreen pattern.")
+        Text("This screen is not yet implemented.")
     }
 }
 

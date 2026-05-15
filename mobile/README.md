@@ -40,8 +40,15 @@ mobile/
 │       │       ├── navigation/Routes.kt     ← @Serializable nav routes
 │       │       ├── components/PageLayout.kt ← topbar + scrolling body
 │       │       └── screens/
-│       │           ├── login/      ← LoginScreen + LoginViewModel  ✅ implemented
-│       │           └── dashboard/  ← DashboardScreen + ViewModel    ✅ implemented
+│       │           ├── login/         ← LoginScreen + LoginViewModel              ✅
+│       │           ├── dashboard/     ← DashboardScreen + ViewModel               ✅
+│       │           ├── organisations/ ← OrganisationsScreen + ViewModel           ✅
+│       │           ├── organisation/  ← OrganisationScreen + ViewModel            ✅
+│       │           ├── cellar/        ← CellarScreen + ViewModel (1Hz ticker)     ✅
+│       │           ├── profile/       ← ProfileScreen + ViewModel                 ✅
+│       │           ├── editprofile/   ← EditProfileScreen + ViewModel             ✅
+│       │           ├── memberprofile/ ← MemberProfileScreen + ViewModel           ✅
+│       │           └── invitations/   ← InvitationsScreen + ViewModel             ✅
 │       ├── androidMain/kotlin/com/pints793/mobile/
 │       │   ├── core/PlatformConfig.android.kt  → BuildKonfig.ANDROID_BASE_URL
 │       │   ├── net/TokenStore.android.kt       → EncryptedSharedPreferences
@@ -152,20 +159,18 @@ The Spring backend already allows arbitrary origins. For dev:
 
 ## Continuation checklist
 
-The following screens are stubbed out in `App.kt` and need to be ported from
-`frontend/src/pages/`. Each one is mostly a mechanical translation: **port the React `useState`
-into the data class fields, port `useEffect` into a `viewModelScope.launch`, port the JSX into
-Compose**.
+All screens listed below have been ported. Reference the table when revisiting any individual
+page; the architecture notes still apply for any future additions.
 
-| Web page | Mobile location to create | Key API calls | Notes |
+| Web page | Mobile location | Key API calls | Status |
 |---|---|---|---|
-| `ChooseOrganisationPage.tsx` | `ui/screens/organisations/{ChooseOrganisationScreen,ViewModel}.kt` | `OrganisationApi.getAll`, `create` | List + new-org dialog |
-| `OrganisationPage.tsx` | `ui/screens/organisation/{OrganisationScreen,ViewModel}.kt` | `OrganisationApi.{members,accessLevel}`, `CellarApi.{getAll,create}`, `UserApi.getProfileImages` | Save → `NavCache.put(orgId, …)` for cellar drill-down. Reproduce the bug fix: only trust cache when `accessLevel` is non-null. |
-| `CellarPage.tsx` | `ui/screens/cellar/{CellarScreen,ViewModel}.kt` | `CaskApi.{getAll,create,update,remove}`, `CellarApi.{getConfig,updateConfig}`, `UserApi.{pinCellar,unpinCellar,getPinnedCellars}` | Use `CaskStateMachine` + a 1-Hz ticker flow. Group by status — port `StatusGroup.tsx` as a Composable. |
-| `ProfilePage.tsx` | `ui/screens/profile/{ProfileScreen,ViewModel}.kt` | `UserApi.getProfile` | Avatar via Coil3 `AsyncImage`. |
-| `EditProfilePage.tsx` | `ui/screens/editprofile/{EditProfileScreen,ViewModel}.kt` | `UserApi.{updateProfile,uploadProfilePicture}` | Add `expect class ImagePicker { suspend fun pick(): PickedImage? }` with an Android `actual` (`ActivityResultContracts.PickVisualMedia`) and an iOS `actual` (`PHPickerViewController` via `suspendCancellableCoroutine`). |
-| `MemberProfilePage.tsx` | `ui/screens/memberprofile/{MemberProfileScreen,ViewModel}.kt` | `UserApi.getUserProfile(userId)` | Receives userId via `Route.MemberProfile`. |
-| `InvitationsPage.tsx` | `ui/screens/invitations/{InvitationsScreen,ViewModel}.kt` | `UserApi.getInvitations`, `OrganisationApi.acceptInvite`, `UserApi.getProfileImage(invitationId)` | List with accept button per row. |
+| `ChooseOrganisationPage.tsx` | `ui/screens/organisations/` | `OrganisationApi.getAll`, `create` | ✅ |
+| `OrganisationPage.tsx` | `ui/screens/organisation/` | `OrganisationApi.{members,accessLevel}`, `CellarApi.{getAll,create}`, `UserApi.getProfileImages` | ✅ — uses `NavCache`; cache trusted only when `accessLevel != null` (same fix as React) |
+| `CellarPage.tsx` | `ui/screens/cellar/` | `CaskApi.{getAll,create,update,remove}`, `CellarApi.{getConfig,updateConfig}`, `UserApi.{pinCellar,unpinCellar,getPinnedCellars}` | ✅ — 1 Hz ticker auto-advances cooldowns via `CaskStateMachine.refresh` |
+| `ProfilePage.tsx` | `ui/screens/profile/` | `UserApi.getProfile` | ✅ |
+| `EditProfilePage.tsx` | `ui/screens/editprofile/` | `UserApi.{updateProfile,uploadProfilePicture}` | ✅ — `rememberImagePicker()` (Android `PickVisualMedia`, iOS `PHPickerViewController`) |
+| `MemberProfilePage.tsx` | `ui/screens/memberprofile/` | `UserApi.getUserProfile(userId)` | ✅ |
+| `InvitationsPage.tsx` | `ui/screens/invitations/` | `UserApi.getInvitations`, `OrganisationApi.acceptInvite`, `UserApi.getProfileImage` | ✅ |
 
 ### Shared composables to port
 

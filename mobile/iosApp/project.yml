@@ -18,6 +18,16 @@ targets:
       - path: iosApp
     info:
       path: iosApp/Info.plist
+      properties:
+        # Required by Compose Multiplatform on high-refresh-rate iPhones.
+        CADisableMinimumFrameDurationOnPhone: true
+        # Dev only: allow cleartext HTTP to the Spring backend on the host machine.
+        # Strip from release builds.
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            localhost:
+              NSExceptionAllowsInsecureHTTPLoads: true
+              NSIncludesSubdomains: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pints793.mobile
@@ -31,11 +41,10 @@ targets:
           - Shared
     preBuildScripts:
       - name: "Build & embed Kotlin shared framework"
+        # No input/output files + basedOnDependencyAnalysis:false → script always runs.
+        # Gradle's own up-to-date check decides whether to actually relink.
+        basedOnDependencyAnalysis: false
         script: |
           cd "$SRCROOT/.."
           ./gradlew :shared:embedAndSignAppleFrameworkForXcode
-        inputFiles:
-          - $(SRCROOT)/project.yml
-        outputFiles:
-          - $(BUILT_PRODUCTS_DIR)/Shared.framework
 
