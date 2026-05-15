@@ -52,7 +52,7 @@ fun CellarScreen(
     var newCask by remember { mutableStateOf("") }
 
     PageLayout(
-        title = "$orgName · $cellarName",
+        title = cellarName,
         onBack = onBack,
         actions = {
             IconButton(
@@ -64,6 +64,15 @@ fun CellarScreen(
             IconButton(onClick = vm::openSettings) { Text("⚙") }
         },
     ) {
+        // Breadcrumb so the org context isn't lost from the title bar.
+        Text(
+            text = orgName,
+            color = PintsColors.TextMuted,
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        )
+        Spacer(Modifier.height(4.dp))
         val total = state.casks.size
         Text(
             "$total cask${if (total != 1) "s" else ""} in this cellar",

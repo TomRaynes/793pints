@@ -25,6 +25,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.pints793.mobile.ui.theme.PintsColors
 
@@ -58,25 +59,32 @@ fun PageLayout(
                     }
                 },
                 title = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = "793 ",
-                            color = PintsColors.Primary,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                        Text(
-                            text = "Pints",
-                            color = PintsColors.Accent,
-                            fontWeight = FontWeight.Bold,
-                            style = MaterialTheme.typography.titleLarge,
-                        )
-                        if (title != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        if (title == null) {
+                            // No page title → show the full brand.
                             Text(
-                                text = "  ·  $title",
-                                color = PintsColors.TextMuted,
-                                style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(start = 4.dp),
+                                text = "793 ",
+                                color = PintsColors.Primary,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Text(
+                                text = "Pints",
+                                color = PintsColors.Accent,
+                                fontWeight = FontWeight.Bold,
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                        } else {
+                            // Page title → show the title with ellipsis if it doesn't fit.
+                            // Drop the brand to free up horizontal space.
+                            Text(
+                                text = title,
+                                color = PintsColors.Primary,
+                                fontWeight = FontWeight.SemiBold,
+                                style = MaterialTheme.typography.titleLarge,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
                             )
                         }
                     }

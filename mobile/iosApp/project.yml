@@ -21,6 +21,9 @@ targets:
       properties:
         # Required by Compose Multiplatform on high-refresh-rate iPhones.
         CADisableMinimumFrameDurationOnPhone: true
+        # Empty UILaunchScreen dict tells iOS to run full-screen on modern iPhones
+        # (without it the app is letterboxed with black bars top/bottom).
+        UILaunchScreen: {}
         # Dev only: allow cleartext HTTP to the Spring backend on the host machine.
         # Strip from release builds.
         NSAppTransportSecurity:
