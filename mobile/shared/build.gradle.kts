@@ -22,6 +22,8 @@ kotlin {
         target.binaries.framework {
             baseName = "Shared"
             isStatic = true
+            // Bundle ID needed for the iOS linker; matches the Xcode app's PRODUCT_BUNDLE_IDENTIFIER.
+            binaryOption("bundleId", "com.pints793.mobile.shared")
         }
     }
 
