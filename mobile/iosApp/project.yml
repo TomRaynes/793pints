@@ -19,6 +19,8 @@ targets:
     info:
       path: iosApp/Info.plist
       properties:
+        # Home-screen label under the icon. Overrides CFBundleName.
+        CFBundleDisplayName: 793Pints
         # Required by Compose Multiplatform on high-refresh-rate iPhones.
         CADisableMinimumFrameDurationOnPhone: true
         # Empty UILaunchScreen dict tells iOS to run full-screen on modern iPhones

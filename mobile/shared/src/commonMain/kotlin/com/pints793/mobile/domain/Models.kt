@@ -35,10 +35,10 @@ data class Cask(
     @SerialName("name") val caskName: String,
     val state: CaskState,
     val stateChangeTimestamp: String, // ISO-8601 from backend; parsed to Instant on demand
-    val rackCooldownHours: Double? = null,
-    val ventCooldownHours: Double? = null,
-    val tapCooldownHours: Double? = null,
-    val pullingPeriodHours: Double? = null,
+    val rackCooldownHours: Long? = null,
+    val ventCooldownHours: Long? = null,
+    val tapCooldownHours: Long? = null,
+    val pullingPeriodHours: Long? = null,
 )
 
 @Serializable
@@ -50,10 +50,10 @@ data class Cellar(
 
 @Serializable
 data class CellarConfig(
-    val rackCooldownDefault: Double = 0.0,
-    val ventCooldownDefault: Double = 0.0,
-    val tapCooldownDefault: Double = 0.0,
-    val pullingPeriodDefault: Double = 0.0,
+    val rackCooldownDefault: Long = 0,
+    val ventCooldownDefault: Long = 0,
+    val tapCooldownDefault: Long = 0,
+    val pullingPeriodDefault: Long = 0,
 )
 
 @Serializable

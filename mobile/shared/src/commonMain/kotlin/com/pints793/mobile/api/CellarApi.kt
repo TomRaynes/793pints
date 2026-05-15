@@ -16,8 +16,10 @@ class CellarApi(private val client: HttpClient) {
     suspend fun getAll(organisationId: String): List<EntityLabel> =
         client.post("cellar/get/all") { setBody(GetAllCellarsRequest(organisationId)) }.body()
 
-    suspend fun create(name: String, organisationId: String): EntityLabel =
-        client.post("cellar/new") { setBody(NewCellarRequest(name, organisationId)) }.body()
+    suspend fun create(name: String, organisationId: String) {
+        // Backend returns 200 with empty body — don't try to deserialize.
+        client.post("cellar/new") { setBody(NewCellarRequest(name, organisationId)) }
+    }
 
     suspend fun getConfig(cellarId: String): CellarConfig =
         client.get("cellar/$cellarId/config").body()

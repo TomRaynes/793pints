@@ -186,11 +186,11 @@ private fun ConfigField(
     Spacer(Modifier.height(8.dp))
     OutlinedTextField(
         value = value,
-        onValueChange = onValue,
+        onValueChange = { raw -> onValue(raw.filter { it.isDigit() }) },
         label = { Text(label) },
         singleLine = true,
         enabled = !disabled,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth(),
     )
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {

@@ -73,16 +73,18 @@ fun CaskCard(
     var deleteOpen by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    // 1Hz countdown
+    // 1 Hz countdown — emits a *changing* Long so Compose actually re-snapshots
+    // each second (emitting Unit would compare equal and never recompose).
     val tickerFlow = remember(cask.caskId) {
         flow {
+            var n = 0L
             while (true) {
-                emit(Unit)
+                emit(n++)
                 delay(1000)
             }
         }
     }
-    val tick by tickerFlow.collectAsState(initial = Unit)
+    val tick by tickerFlow.collectAsState(initial = 0L)
 
     val cooldown = CaskStateMachine.cooldownHours(cask)
     val remaining = if (cooldown != null) {
@@ -288,10 +290,10 @@ private fun NumberRow(label: String, value: String, onChange: (String) -> Unit) 
     Spacer(Modifier.height(8.dp))
     OutlinedTextField(
         value = value,
-        onValueChange = onChange,
+        onValueChange = { raw -> onChange(raw.filter { it.isDigit() }) },
         label = { Text(label) },
         singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier.fillMaxWidth(),
     )
 }

@@ -20,7 +20,7 @@ object CaskStateMachine {
         CaskState.Tired        -> CaskState.Tired
     }
 
-    fun cooldownHours(cask: Cask): Double? = when (cask.state) {
+    fun cooldownHours(cask: Cask): Long? = when (cask.state) {
         CaskState.Racked  -> cask.rackCooldownHours
         CaskState.Vented  -> cask.ventCooldownHours
         CaskState.Tapped  -> cask.tapCooldownHours
@@ -39,7 +39,7 @@ object CaskStateMachine {
         val hours = cooldownHours(cask) ?: return null
         val ts = runCatching { Instant.parse(cask.stateChangeTimestamp) }.getOrNull() ?: return null
         val elapsedMs = now.toEpochMilliseconds() - ts.toEpochMilliseconds()
-        return (hours * 60 * 60 * 1000).toLong() - elapsedMs
+        return hours * 60L * 60L * 1000L - elapsedMs
     }
 }
 
